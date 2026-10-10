@@ -1,0 +1,24 @@
+name: amaquet
+
+services:
+  amaquet:
+    build: .
+    image: amaquet:local
+    environment:
+      AMAQUET_BOOTSTRAP_TOKEN: "${AMAQUET_BOOTSTRAP_TOKEN:?Set AMAQUET_BOOTSTRAP_TOKEN in your environment}"
+    command: ["--config", "/app/amaquet.production.json"]
+    ports:
+      - "13378:13378"
+      - "13379:13379"
+    volumes:
+      - amaquet-data:/app/data
+      - ./amaquet.production.example.json:/app/amaquet.production.json:ro
+      - ./certs/amaquet-server.crt:/run/secrets/amaquet-server.crt:ro
+      - ./certs/amaquet-server.key:/run/secrets/amaquet-server.key:ro
+      - ./certs/amaquet-admin.crt:/run/secrets/amaquet-admin.crt:ro
+      - ./certs/amaquet-admin.key:/run/secrets/amaquet-admin.key:ro
+    restart: unless-stopped
+    stop_grace_period: 30s
+
+volumes:
+  amaquet-data:
