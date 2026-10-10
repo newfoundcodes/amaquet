@@ -1,0 +1,1088 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Amaquet Administration API",
+    "version": "0.1.0",
+    "description": "HTTP control-plane API for an Amaquet server. Unless an operation is marked public, authenticate with a bearer token, X-Amaquet-Admin-Token, or the amaquet_session cookie."
+  },
+  "servers": [
+    {
+      "url": "/",
+      "description": "Current administration listener"
+    }
+  ],
+  "security": [
+    { "bearerAuth": [] },
+    { "adminToken": [] },
+    { "sessionCookie": [] }
+  ],
+  "tags": [
+    { "name": "Discovery" },
+    { "name": "Health" },
+    { "name": "Authentication" },
+    { "name": "Identity" },
+    { "name": "Organization" },
+    { "name": "Members" },
+    { "name": "RBAC" },
+    { "name": "API keys" },
+    { "name": "System" },
+    { "name": "Persistence" },
+    { "name": "Data" },
+    { "name": "Audit" },
+    { "name": "Metrics" }
+  ],
+  "paths": {
+    "/openapi.json": {
+      "get": {
+        "operationId": "getOpenAPI",
+        "summary": "Download this OpenAPI document",
+        "tags": ["Discovery"],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "OpenAPI document",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/health": {
+      "get": {
+        "operationId": "getHealth",
+        "summary": "Check process liveness",
+        "tags": ["Health"],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "The process is live",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HealthResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ready": {
+      "get": {
+        "operationId": "getReadiness",
+        "summary": "Check service and persistence readiness",
+        "tags": ["Health"],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "The service is ready",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ReadinessResponse" }
+              }
+            }
+          },
+          "503": {
+            "description": "Persistence is unhealthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["ok", "error"],
+                  "properties": {
+                    "ok": { "type": "boolean", "const": false },
+                    "error": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/metrics": {
+      "get": {
+        "operationId": "getMetrics",
+        "summary": "Read Prometheus metrics",
+        "description": "Authentication is required when admin.metrics_require_auth is enabled.",
+        "tags": ["Metrics"],
+        "security": [
+          { "bearerAuth": [] },
+          { "adminToken": [] },
+          { "sessionCookie": [] },
+          {}
+        ],
+        "responses": {
+          "200": {
+            "description": "Prometheus 0.0.4 metrics",
+            "content": {
+              "text/plain": {
+                "schema": { "type": "string" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/api/auth/check": {
+      "get": {
+        "operationId": "checkAuthentication",
+        "summary": "Validate the current credential",
+        "tags": ["Authentication"],
+        "responses": {
+          "200": {
+            "description": "Authenticated actor",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthCheckResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/session": {
+      "post": {
+        "operationId": "createSession",
+        "summary": "Exchange a credential for a server-side session",
+        "tags": ["Authentication"],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SessionRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Session created; sets the amaquet_session cookie",
+            "headers": {
+              "Set-Cookie": {
+                "schema": { "type": "string" }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SessionResponse" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" },
+          "503": { "$ref": "#/components/responses/ServiceUnavailable" }
+        }
+      },
+      "delete": {
+        "operationId": "deleteSession",
+        "summary": "Destroy the current server-side session",
+        "tags": ["Authentication"],
+        "security": [],
+        "responses": {
+          "204": { "description": "Session removed" }
+        }
+      }
+    },
+    "/api/identity/accept-invite": {
+      "post": {
+        "operationId": "acceptMemberInvite",
+        "summary": "Accept a one-time member invitation",
+        "tags": ["Identity"],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["invite"],
+                "properties": {
+                  "invite": { "type": "string" }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Invitation accepted; access_token is shown once",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["member", "access_token", "warning"],
+                  "properties": {
+                    "member": { "$ref": "#/components/schemas/Member" },
+                    "access_token": { "type": "string" },
+                    "warning": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/identity/mfa": {
+      "post": {
+        "operationId": "beginMemberMFA",
+        "summary": "Begin TOTP MFA setup",
+        "tags": ["Identity"],
+        "responses": {
+          "201": {
+            "description": "Pending TOTP secret",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["secret", "otpauth"],
+                  "properties": {
+                    "secret": { "type": "string" },
+                    "otpauth": { "type": "string", "format": "uri" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      },
+      "put": {
+        "operationId": "confirmMemberMFA",
+        "summary": "Confirm TOTP MFA setup",
+        "tags": ["Identity"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["code"],
+                "properties": {
+                  "code": { "type": "string", "pattern": "^[0-9]{6}$" }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "MFA enabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["enabled"],
+                  "properties": { "enabled": { "type": "boolean", "const": true } }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      },
+      "delete": {
+        "operationId": "disableMemberMFA",
+        "summary": "Disable TOTP MFA",
+        "tags": ["Identity"],
+        "responses": {
+          "204": { "description": "MFA disabled" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/api/overview": {
+      "get": {
+        "operationId": "getOverview",
+        "summary": "Read a control-plane and engine summary",
+        "tags": ["System"],
+        "responses": {
+          "200": {
+            "description": "Overview",
+            "content": {
+              "application/json": { "schema": { "type": "object" } }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/api/organization": {
+      "get": {
+        "operationId": "getOrganization",
+        "summary": "Read the organization",
+        "tags": ["Organization"],
+        "responses": {
+          "200": {
+            "description": "Organization",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Organization" } }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      },
+      "put": {
+        "operationId": "updateOrganization",
+        "summary": "Update the organization",
+        "tags": ["Organization"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "slug"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "slug": { "type": "string" }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated organization",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Organization" } }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/api/members": {
+      "get": {
+        "operationId": "listMembers",
+        "summary": "List members",
+        "tags": ["Members"],
+        "responses": {
+          "200": {
+            "description": "Members",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Member" } }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      },
+      "post": {
+        "operationId": "createMember",
+        "summary": "Create a member",
+        "tags": ["Members"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CreateMemberRequest" } }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created member",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Member" } }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/api/members/{id}": {
+      "parameters": [
+        { "$ref": "#/components/parameters/MemberID" }
+      ],
+      "patch": {
+        "operationId": "updateMember",
+        "summary": "Update a member role or status",
+        "tags": ["Members"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/UpdateMemberRequest" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated member",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Member" } }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      },
+      "delete": {
+        "operationId": "deleteMember",
+        "summary": "Delete a member",
+        "tags": ["Members"],
+        "responses": {
+          "204": { "description": "Member deleted" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/members/{id}/invite": {
+      "parameters": [
+        { "$ref": "#/components/parameters/MemberID" }
+      ],
+      "post": {
+        "operationId": "createMemberInvite",
+        "summary": "Create a one-time member invitation",
+        "tags": ["Members"],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ttl_hours": { "type": "integer", "minimum": 1, "default": 24 }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Invitation token shown once",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["invite", "expires_in_seconds", "warning"],
+                  "properties": {
+                    "invite": { "type": "string" },
+                    "expires_in_seconds": { "type": "integer", "format": "int64" },
+                    "warning": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/api/rbac": {
+      "get": {
+        "operationId": "getRBAC",
+        "summary": "Read role permission sets",
+        "tags": ["RBAC"],
+        "responses": {
+          "200": {
+            "description": "Role-to-permissions map",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/RBAC" } }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      },
+      "put": {
+        "operationId": "updateRBAC",
+        "summary": "Replace role permission sets",
+        "tags": ["RBAC"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/RBAC" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated role-to-permissions map",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/RBAC" } }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/api/api-keys": {
+      "get": {
+        "operationId": "listAPIKeys",
+        "summary": "List API keys",
+        "tags": ["API keys"],
+        "responses": {
+          "200": {
+            "description": "API keys without credential hashes",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/APIKey" } }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      },
+      "post": {
+        "operationId": "createAPIKey",
+        "summary": "Create an API key",
+        "tags": ["API keys"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CreateAPIKeyRequest" } }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created API key; secret is shown once",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["api_key", "secret", "warning"],
+                  "properties": {
+                    "api_key": { "$ref": "#/components/schemas/APIKey" },
+                    "secret": { "type": "string" },
+                    "warning": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/api/api-keys/{id}": {
+      "parameters": [
+        { "$ref": "#/components/parameters/APIKeyID" }
+      ],
+      "delete": {
+        "operationId": "revokeAPIKey",
+        "summary": "Revoke an API key",
+        "tags": ["API keys"],
+        "responses": {
+          "204": { "description": "API key revoked" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/system": {
+      "get": {
+        "operationId": "getSystemConfiguration",
+        "summary": "Read the public server configuration",
+        "tags": ["System"],
+        "responses": {
+          "200": {
+            "description": "Current public configuration",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/SystemResponse" } }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      },
+      "put": {
+        "operationId": "updateSystemConfiguration",
+        "summary": "Validate and persist the complete server configuration",
+        "tags": ["System"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/Configuration" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Saved public configuration",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/SystemResponse" } }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        }
+      }
+    },
+    "/api/persistence/checkpoint": {
+      "post": {
+        "operationId": "createPersistenceCheckpoint",
+        "summary": "Create a verified AOF checkpoint",
+        "tags": ["Persistence"],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { "name": { "type": "string" } },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Checkpoint created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["path"],
+                  "properties": { "path": { "type": "string" } }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        }
+      }
+    },
+    "/api/persistence/compact": {
+      "post": {
+        "operationId": "compactPersistence",
+        "summary": "Compact the active AOF",
+        "tags": ["Persistence"],
+        "responses": {
+          "200": {
+            "description": "Compaction completed",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        }
+      }
+    },
+    "/api/data/keys": {
+      "get": {
+        "operationId": "listDataKeys",
+        "summary": "Scan database keys",
+        "tags": ["Data"],
+        "parameters": [
+          { "name": "cursor", "in": "query", "schema": { "type": "string" } },
+          { "name": "prefix", "in": "query", "schema": { "type": "string" } },
+          { "name": "count", "in": "query", "schema": { "type": "integer", "minimum": 1, "maximum": 10000, "default": 250 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Key scan page",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["keys", "cursor"],
+                  "properties": {
+                    "keys": { "type": "array", "items": { "type": "string" } },
+                    "cursor": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/api/data/key": {
+      "get": {
+        "operationId": "getDataKey",
+        "summary": "Read one database key",
+        "tags": ["Data"],
+        "parameters": [
+          { "$ref": "#/components/parameters/DataKey" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Stored value envelope",
+            "content": {
+              "application/json": { "schema": { "type": "object" } }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "delete": {
+        "operationId": "deleteDataKey",
+        "summary": "Delete one database key",
+        "tags": ["Data"],
+        "parameters": [
+          { "$ref": "#/components/parameters/DataKey" }
+        ],
+        "responses": {
+          "204": { "description": "Key deleted" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/api/data/command": {
+      "post": {
+        "operationId": "executeDataCommand",
+        "summary": "Execute a native Amaquet command",
+        "description": "Authorization is selected dynamically from the command and operation classification.",
+        "tags": ["Data"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CommandRequest" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Command result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["ok", "result"],
+                  "properties": {
+                    "ok": { "type": "boolean", "const": true },
+                    "result": {}
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        }
+      }
+    },
+    "/api/audit": {
+      "get": {
+        "operationId": "listAuditEvents",
+        "summary": "List retained audit events",
+        "tags": ["Audit"],
+        "parameters": [
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "minimum": 1, "default": 200 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Audit events",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/AuditEvent" } }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      },
+      "adminToken": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Amaquet-Admin-Token"
+      },
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "amaquet_session"
+      }
+    },
+    "parameters": {
+      "MemberID": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": { "type": "string" }
+      },
+      "APIKeyID": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": { "type": "string" }
+      },
+      "DataKey": {
+        "name": "key",
+        "in": "query",
+        "required": true,
+        "schema": { "type": "string", "minLength": 1 }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Invalid request",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
+      },
+      "Unauthorized": {
+        "description": "Missing or invalid credential",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
+      },
+      "Forbidden": {
+        "description": "The actor lacks the required permission",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
+      },
+      "NotFound": {
+        "description": "Resource not found",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
+      },
+      "Conflict": {
+        "description": "Operation is unavailable in the current configuration",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
+      },
+      "RateLimited": {
+        "description": "Authentication rate limit exceeded",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
+      },
+      "ServiceUnavailable": {
+        "description": "A bounded service resource is exhausted",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
+      },
+      "InternalError": {
+        "description": "Server operation failed",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
+      }
+    },
+    "schemas": {
+      "Role": {
+        "type": "string",
+        "enum": ["admin", "auditor", "developer"]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["ok", "error"],
+        "properties": {
+          "ok": { "type": "boolean", "const": false },
+          "error": {
+            "type": "object",
+            "required": ["code", "message"],
+            "properties": {
+              "code": { "type": "string" },
+              "message": { "type": "string" }
+            }
+          }
+        }
+      },
+      "SuccessResponse": {
+        "type": "object",
+        "required": ["ok"],
+        "properties": { "ok": { "type": "boolean", "const": true } }
+      },
+      "HealthResponse": {
+        "type": "object",
+        "required": ["ok", "service", "time"],
+        "properties": {
+          "ok": { "type": "boolean", "const": true },
+          "service": { "type": "string", "const": "amaquet-admin" },
+          "time": { "type": "string", "format": "date-time" }
+        }
+      },
+      "ReadinessResponse": {
+        "type": "object",
+        "required": ["ok", "keys", "memory"],
+        "properties": {
+          "ok": { "type": "boolean", "const": true },
+          "keys": { "type": "integer", "format": "int64" },
+          "memory": { "type": "object" }
+        }
+      },
+      "AuthCheckResponse": {
+        "type": "object",
+        "required": ["ok", "role", "actor"],
+        "properties": {
+          "ok": { "type": "boolean", "const": true },
+          "role": { "$ref": "#/components/schemas/Role" },
+          "actor": { "type": "string" }
+        }
+      },
+      "SessionRequest": {
+        "type": "object",
+        "required": ["token"],
+        "properties": {
+          "token": { "type": "string" },
+          "mfa_code": { "type": "string", "pattern": "^[0-9]{6}$" }
+        },
+        "additionalProperties": false
+      },
+      "SessionResponse": {
+        "type": "object",
+        "required": ["ok", "role", "expires_at"],
+        "properties": {
+          "ok": { "type": "boolean", "const": true },
+          "role": { "$ref": "#/components/schemas/Role" },
+          "expires_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Organization": {
+        "type": "object",
+        "required": ["id", "name", "slug", "created_at", "updated_at"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "slug": { "type": "string" },
+          "created_at": { "type": "string", "format": "date-time" },
+          "updated_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Member": {
+        "type": "object",
+        "required": ["id", "name", "email", "role", "status", "created_at"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "role": { "$ref": "#/components/schemas/Role" },
+          "status": { "type": "string" },
+          "created_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CreateMemberRequest": {
+        "type": "object",
+        "required": ["name", "email", "role"],
+        "properties": {
+          "name": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "role": { "$ref": "#/components/schemas/Role" }
+        },
+        "additionalProperties": false
+      },
+      "UpdateMemberRequest": {
+        "type": "object",
+        "properties": {
+          "role": { "$ref": "#/components/schemas/Role" },
+          "status": { "type": "string", "enum": ["active", "disabled"] }
+        },
+        "additionalProperties": false
+      },
+      "RBAC": {
+        "type": "object",
+        "required": ["admin", "auditor", "developer"],
+        "properties": {
+          "admin": { "type": "array", "items": { "type": "string" } },
+          "auditor": { "type": "array", "items": { "type": "string" } },
+          "developer": { "type": "array", "items": { "type": "string" } }
+        },
+        "additionalProperties": false
+      },
+      "APIKey": {
+        "type": "object",
+        "required": ["id", "name", "prefix", "role", "created_at", "revoked"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "prefix": { "type": "string" },
+          "role": { "$ref": "#/components/schemas/Role" },
+          "created_at": { "type": "string", "format": "date-time" },
+          "expires_at": { "type": ["string", "null"], "format": "date-time" },
+          "last_used_at": { "type": ["string", "null"], "format": "date-time" },
+          "revoked": { "type": "boolean" }
+        }
+      },
+      "CreateAPIKeyRequest": {
+        "type": "object",
+        "required": ["name", "role"],
+        "properties": {
+          "name": { "type": "string" },
+          "role": { "$ref": "#/components/schemas/Role" },
+          "expires_at": { "type": ["string", "null"], "format": "date-time" }
+        },
+        "additionalProperties": false
+      },
+      "Configuration": {
+        "type": "object",
+        "description": "Complete Amaquet configuration. See the configuration reference for field constraints.",
+        "required": ["protocol", "admin", "security", "persistence", "limits", "compression", "data_dir"],
+        "properties": {
+          "protocol": { "type": "object" },
+          "admin": { "type": "object" },
+          "security": { "type": "object" },
+          "persistence": { "type": "object" },
+          "limits": { "type": "object" },
+          "compression": { "type": "object" },
+          "data_dir": { "type": "string" }
+        }
+      },
+      "SystemResponse": {
+        "type": "object",
+        "required": ["config", "restart_required"],
+        "properties": {
+          "config": { "$ref": "#/components/schemas/Configuration" },
+          "restart_required": { "type": "boolean" }
+        }
+      },
+      "CommandRequest": {
+        "type": "object",
+        "required": ["command"],
+        "properties": {
+          "command": { "type": "string" },
+          "args": { "type": "object", "additionalProperties": true }
+        }
+      },
+      "AuditEvent": {
+        "type": "object",
+        "required": ["id", "at", "actor", "action", "resource"],
+        "properties": {
+          "id": { "type": "string" },
+          "at": { "type": "string", "format": "date-time" },
+          "actor": { "type": "string" },
+          "action": { "type": "string" },
+          "resource": { "type": "string" },
+          "details": { "type": "object", "additionalProperties": true }
+        }
+      }
+    }
+  }
+}
