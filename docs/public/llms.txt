@@ -1,0 +1,180 @@
+# Amaquet Documentation
+
+> Official documentation for Amaquet, a standalone typed in-memory database written in Go with its own binary protocol, persistence layer, Go client, and HTTP administration API.
+
+Use these implementation-aligned pages for installation, protocol integration, data-type behavior, operations, and development. The complete documentation is also available as one machine-readable file at `/llms-full.txt`.
+
+## Complete export
+
+- [Amaquet documentation — full text](/llms-full.txt): Complete Markdown content for every published documentation page in a single file.
+
+## Core documentation
+
+- [Amaquet documentation](/): Official Amaquet documentation for installing, configuring, operating, and integrating with the standalone typed in-memory database and its binary protocol.
+- [Amaquet architecture](/architecture/): Amaquet architecture reference covering the sharded storage engine, typed values, protocol server, Go client, HTTP control plane, and append-only persistence.
+- [Amaquet protocol specification v1](/protocol/): Amaquet protocol v1 reference for connection URIs, binary frames, multiplexing, negotiation, authentication, commands, Pub/Sub events, and RBAC.
+
+## Getting started
+
+- [Configuration](/getting-started/configuration/): Configure Amaquet listeners, authentication, TLS, persistence, memory limits, request admission, and compression for local or production deployments.
+- [Installation](/getting-started/installation/): Install Amaquet from source, configure its server and CLI binaries, secure the first startup, and verify an authenticated request.
+- [Quick start](/getting-started/quickstart/): Run Amaquet locally, create a first key, connect with amaquet-cli, and move from an unauthenticated example to a secure deployment.
+
+## Concepts
+
+- [Architecture](/concepts/architecture/): Amaquet separates protocol, authorization, dispatch, storage, value implementations, persistence, and administration.
+- [Adaptive in-memory compression](/concepts/compression/): Amaquet can store selected large values in compressed form while preserving their normal Amaquet data type.
+- [Engine internals](/concepts/engine-internals/): This page describes the behavior implemented by internal/core, including constraints that are not visible in the short command reference.
+- [Keyspace and lifecycle](/concepts/keyspace/): This page explains how Amaquet stores keys, applies expiration, and performs conditional lifecycle operations.
+- [Memory and concurrency model](/concepts/memory-model/): This page explains entry metadata, shard-level concurrency, object-level synchronization, and transaction locking.
+- [Persistence and recovery](/concepts/persistence/): Amaquet keeps the active data set in its own in-memory engine. Optional persistence uses the Amaquet append-only write-ahead journal (AOF); it does not depend…
+- [Security model](/concepts/security/): Amaquet separates transport security, machine credentials, human member identities, HTTP cookie sessions, RBAC, and optional server identity.
+- [Why Amaquet?](/concepts/why-amaquet/): Compare Amaquet and Redis across protocol compatibility, typed data models, concurrency, persistence, security, operations, and deployment fit.
+
+## Protocol
+
+- [Amaquet authentication and identity](/protocol/authentication/): This page describes protocol negotiation, API-key authentication, permissions, and optional Ed25519 identity verification.
+- [Command reference](/protocol/commands/): These commands operate on the keyspace, server metadata, or execution envelope rather than on one type-specific implementation.
+- [Binary framing](/protocol/framing/): Every Amaquet frame has a fixed 24-byte header followed by a bounded payload.
+- [Amaquet protocol overview](/protocol/overview/): Amaquet is Amaquet's binary framed protocol. It is not RESP and it does not proxy Redis.
+- [Connection URIs](/protocol/uri/): Use Amaquet connection URIs to select a protocol transport and identify the target server endpoint.
+- [Wire values and snapshots](/protocol/wire-values/): The type string must be one of the names returned by TYPES. Unknown names and malformed representations are rejected before mutation.
+
+## Data types
+
+- [Data types](/data-types/): Browse Amaquet's 91 stable wire-level data types, their categories, construction commands, supported operations, and links to detailed references.
+- [Bit structures](/data-types/bit-structures/): Bit structures provide compact bit-level and integer-set storage.
+- [Collections](/data-types/collections/): Collections are synchronized mutable structures manipulated with OP.
+- [Geospatial](/data-types/geospatial/): Geospatial types use latitude/longitude coordinates and spatial predicates.
+- [Graph, synchronization, and network](/data-types/graph-synchronization-and-network/): These types cover graph adjacency, atomic coordination, synchronization, rate limiting, and network values.
+- [Indexes and search](/data-types/indexes-and-search/): Index/search types provide exact, range, prefix, full-text, vector, and secondary lookup paths.
+- [Type construction and operation reference](/data-types/operations/): Reference the Amaquet protocol contract for constructing and operating on typed values, including arguments, defaults, results, persistence, and failures.
+- [Probabilistic](/data-types/probabilistic/): Probabilistic structures provide bounded-memory estimates and membership/frequency queries.
+- [Queues and messaging](/data-types/queues-and-messaging/): Queue and messaging types provide ordering, delivery, streaming, and publication semantics.
+- [Scalar](/data-types/scalar/): Scalar values are stored directly in a key and use SET.
+- [Structured](/data-types/structured/): Structured values cover documents, encoded payloads, records, matrices, and tensors.
+- [Time series](/data-types/time-series/): Time-series types store timestamped numeric data and derived statistics.
+- [Vectors](/data-types/vectors/): Vector types support embeddings, metadata, quantization, and similarity search.
+
+## Data type reference
+
+- [adjacency_set](/data-types/types/adjacency_set/): Amaquet adjacency set data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [aggregated_series](/data-types/types/aggregated_series/): Amaquet aggregated series data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [array](/data-types/types/array/): Amaquet array data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [atomic_counter](/data-types/types/atomic_counter/): Amaquet atomic counter data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [barrier](/data-types/types/barrier/): Amaquet barrier data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [big_decimal](/data-types/types/big_decimal/): Amaquet big decimal data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [big_integer](/data-types/types/big_integer/): Amaquet big integer data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [binary_string](/data-types/types/binary_string/): Amaquet binary string data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [bit_field](/data-types/types/bit_field/): Amaquet bit field data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [bit_set](/data-types/types/bit_set/): Amaquet bit set data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [bitmap](/data-types/types/bitmap/): Amaquet bitmap data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [blocking_queue](/data-types/types/blocking_queue/): Amaquet blocking queue data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [bloom_filter](/data-types/types/bloom_filter/): Amaquet bloom filter data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [boolean](/data-types/types/boolean/): Amaquet boolean data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [bounding_box](/data-types/types/bounding_box/): Amaquet bounding box data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [btree_index](/data-types/types/btree_index/): Amaquet btree index data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [cbor](/data-types/types/cbor/): Amaquet cbor data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [cidr_network](/data-types/types/cidr_network/): Amaquet cidr network data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [consumer_group](/data-types/types/consumer_group/): Amaquet consumer group data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [count_min_sketch](/data-types/types/count_min_sketch/): Amaquet count min sketch data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [counter_series](/data-types/types/counter_series/): Amaquet counter series data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [counting_bloom_filter](/data-types/types/counting_bloom_filter/): Amaquet counting bloom filter data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [cuckoo_filter](/data-types/types/cuckoo_filter/): Amaquet cuckoo filter data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [decimal](/data-types/types/decimal/): Amaquet decimal data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [delayed_queue](/data-types/types/delayed_queue/): Amaquet delayed queue data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [dense_vector](/data-types/types/dense_vector/): Amaquet dense vector data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [deque](/data-types/types/deque/): Amaquet deque data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [duration](/data-types/types/duration/): Amaquet duration data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [event_log](/data-types/types/event_log/): Amaquet event log data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [fifo_queue](/data-types/types/fifo_queue/): Amaquet fifo queue data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [flat_vector_index](/data-types/types/flat_vector_index/): Amaquet flat vector index data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [float](/data-types/types/float/): Amaquet float data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [full_text_document](/data-types/types/full_text_document/): Amaquet full text document data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [gauge_series](/data-types/types/gauge_series/): Amaquet gauge series data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [geo_point](/data-types/types/geo_point/): Amaquet geo point data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [geo_spatial_index](/data-types/types/geo_spatial_index/): Amaquet geo spatial index data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [geospatial_secondary_index](/data-types/types/geospatial_secondary_index/): Amaquet geospatial secondary index data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [hash_index](/data-types/types/hash_index/): Amaquet hash index data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [hashmap](/data-types/types/hashmap/): Amaquet hashmap data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [histogram](/data-types/types/histogram/): Amaquet histogram data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [hnsw_index](/data-types/types/hnsw_index/): Amaquet hnsw index data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [hyperloglog](/data-types/types/hyperloglog/): Amaquet hyperloglog data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [integer](/data-types/types/integer/): Amaquet integer data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [inverted_index](/data-types/types/inverted_index/): Amaquet inverted index data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [json](/data-types/types/json/): Amaquet json data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [lease](/data-types/types/lease/): Amaquet lease data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [lifo_stack](/data-types/types/lifo_stack/): Amaquet lifo stack data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [list](/data-types/types/list/): Amaquet list data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [lock](/data-types/types/lock/): Amaquet lock data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [matrix](/data-types/types/matrix/): Amaquet matrix data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [messagepack](/data-types/types/messagepack/): Amaquet messagepack data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [multimap](/data-types/types/multimap/): Amaquet multimap data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [multiset](/data-types/types/multiset/): Amaquet multiset data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [null](/data-types/types/null/): Amaquet null data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [numeric_field](/data-types/types/numeric_field/): Amaquet numeric field data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [ordered_map](/data-types/types/ordered_map/): Amaquet ordered map data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [ordered_set](/data-types/types/ordered_set/): Amaquet ordered set data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [persistent_topic](/data-types/types/persistent_topic/): Amaquet persistent topic data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [polygon](/data-types/types/polygon/): Amaquet polygon data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [priority_queue](/data-types/types/priority_queue/): Amaquet priority queue data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [pubsub](/data-types/types/pubsub/): Amaquet pubsub data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [quantized_vector](/data-types/types/quantized_vector/): Amaquet quantized vector data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [radix_tree](/data-types/types/radix_tree/): Amaquet radix tree data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [rate_limit_bucket](/data-types/types/rate_limit_bucket/): Amaquet rate limit bucket data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [record](/data-types/types/record/): Amaquet record data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [reliable_queue](/data-types/types/reliable_queue/): Amaquet reliable queue data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [ring_buffer](/data-types/types/ring_buffer/): Amaquet ring buffer data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [roaring_bitmap](/data-types/types/roaring_bitmap/): Amaquet roaring bitmap data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [secondary_index](/data-types/types/secondary_index/): Amaquet secondary index data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [semaphore](/data-types/types/semaphore/): Amaquet semaphore data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [set](/data-types/types/set/): Amaquet set data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [sorted_set](/data-types/types/sorted_set/): Amaquet sorted set data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [sparse_vector](/data-types/types/sparse_vector/): Amaquet sparse vector data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [stream](/data-types/types/stream/): Amaquet stream data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [symbol](/data-types/types/symbol/): Amaquet symbol data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [t_digest](/data-types/types/t_digest/): Amaquet t digest data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [tag_field](/data-types/types/tag_field/): Amaquet tag field data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [tensor](/data-types/types/tensor/): Amaquet tensor data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [text_field](/data-types/types/text_field/): Amaquet text field data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [timeseries_labels](/data-types/types/timeseries_labels/): Amaquet timeseries labels data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [timeseries](/data-types/types/timeseries/): Amaquet timeseries data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [timestamp](/data-types/types/timestamp/): Amaquet timestamp data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [top_k](/data-types/types/top_k/): Amaquet top k data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [trie](/data-types/types/trie/): Amaquet trie data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [tuple](/data-types/types/tuple/): Amaquet tuple data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [unsigned_integer](/data-types/types/unsigned_integer/): Amaquet unsigned integer data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [url](/data-types/types/url/): Amaquet url data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [utf8_string](/data-types/types/utf8_string/): Amaquet utf8 string data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [uuid](/data-types/types/uuid/): Amaquet uuid data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [vector_metadata](/data-types/types/vector_metadata/): Amaquet vector metadata data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+- [vector_set](/data-types/types/vector_set/): Amaquet vector set data type reference covering construction, supported operations, key lifecycle, contract tests, and fuzzing.
+
+## Operations
+
+- [Backup and recovery](/operations/backups/): This page explains which Amaquet state must be protected and how to create, validate, and restore recovery artifacts.
+- [Capacity planning](/operations/capacity/): Amaquet keeps the active database in memory. Plan capacity from the stored data, indexes, Go object overhead, protocol buffers, temporary work space,…
+- [Production deployment](/operations/deployment/): Use this guidance to deploy Amaquet as a secure, monitored single-node stateful service.
+- [Docker](/operations/docker/): The repository contains Dockerfile, a loopback-only development docker-compose.yml, and a TLS-oriented docker-compose.production.yml.
+- [Observability](/operations/observability/): This page describes the native and HTTP surfaces that expose Amaquet health, capacity, and runtime metrics.
+- [Production hardening](/operations/production-hardening/): Amaquet applies bounded-resource, fail-stop, and revocation rules for a single-node production deployment.
+- [TLS and protocol identity](/operations/tls/): Configure TLS for transport security and optional Ed25519 keys for stable application-level server identity.
+- [Troubleshooting](/operations/troubleshooting/): Use these symptoms and corrective actions to diagnose common startup, authentication, persistence, TLS, and test failures.
+
+## Development
+
+- [Adding a data type](/development/adding-types/): A new stable type touches several contracts. Keep them synchronized.
+- [Development build](/development/build/): Use these commands and Make targets to build, test, and serve Amaquet and its documentation during development.
+- [Developer workflow fuzzing](/development/developer-fuzzing/): Amaquet has a second black-box fuzz layer in addition to the 91 per-type fuzzers.
+- [Repository layout](/development/repository-layout/): This diagram maps the repository's executable, implementation, client, automation, test, and documentation directories.
+- [Bash testing and fuzzing](/development/testing-fuzzing/): Amaquet includes a black-box Bash contract and a mutation-fuzz entrypoint for every stable wire data type.
+
+## Reference
+
+- [Administration API](/reference/admin-api/): Operate Amaquet through its HTTP administration API for authentication, organizations, members, API keys, RBAC, data access, metrics, and audit events.
+- [CLI reference](/reference/cli/): Use the Amaquet command-line tools for native protocol commands, API-key authentication, server identity generation, and verified checkpoint restoration.
+- [Configuration reference](/reference/configuration/): Reference every Amaquet JSON configuration field, including defaults, accepted values, validation rules, security implications, and operational effects.
+- [Error model](/reference/errors/): Amaquet response errors include a stable code and human-readable message.
+- [Glossary](/reference/glossary/): AOF — Append-only file containing journaled Amaquet mutation requests.
+- [Go client library](/reference/go-client/): Integrate Amaquet from Go with the concurrent-safe client, TCP or TLS dialing, request multiplexing, authentication, subscriptions, and typed commands.
+- [Implementation coverage map](/reference/implementation-coverage/): This page maps the production repository to the documentation that describes it.
