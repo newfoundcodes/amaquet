@@ -1,0 +1,16 @@
+/bin/
+/data/
+/docs/node_modules/
+/docs/dist/
+/docs/.astro/
+/.venv/
+/.venv-docs/
+__pycache__/
+/site/
+/amaquet.json
+/*db.json
+*.aof
+*.pem
+*.crt
+*.key
+.DS_Store
