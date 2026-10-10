@@ -1,0 +1,1444 @@
+[
+  {
+    "name": "binary_string",
+    "category": "Scalar",
+    "construction": "SET",
+    "value": "AAECaGVsbG8=",
+    "options": {},
+    "operations": [
+      "GET"
+    ],
+    "test": "tests/bash/types/test_binary_string.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_binary_string.sh"
+  },
+  {
+    "name": "utf8_string",
+    "category": "Scalar",
+    "construction": "SET",
+    "value": "Hello, Amaquet \ud83d\udc4b",
+    "options": {},
+    "operations": [
+      "GET"
+    ],
+    "test": "tests/bash/types/test_utf8_string.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_utf8_string.sh"
+  },
+  {
+    "name": "integer",
+    "category": "Scalar",
+    "construction": "SET",
+    "value": 42,
+    "options": {},
+    "operations": [
+      "ADD"
+    ],
+    "test": "tests/bash/types/test_integer.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_integer.sh"
+  },
+  {
+    "name": "unsigned_integer",
+    "category": "Scalar",
+    "construction": "SET",
+    "value": 42,
+    "options": {},
+    "operations": [
+      "ADD"
+    ],
+    "test": "tests/bash/types/test_unsigned_integer.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_unsigned_integer.sh"
+  },
+  {
+    "name": "float",
+    "category": "Scalar",
+    "construction": "SET",
+    "value": 3.14159,
+    "options": {},
+    "operations": [
+      "ADD"
+    ],
+    "test": "tests/bash/types/test_float.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_float.sh"
+  },
+  {
+    "name": "decimal",
+    "category": "Scalar",
+    "construction": "SET",
+    "value": "12345.6789",
+    "options": {},
+    "operations": [
+      "ADD",
+      "SUB",
+      "CMP"
+    ],
+    "test": "tests/bash/types/test_decimal.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_decimal.sh"
+  },
+  {
+    "name": "boolean",
+    "category": "Scalar",
+    "construction": "SET",
+    "value": true,
+    "options": {},
+    "operations": [
+      "TOGGLE"
+    ],
+    "test": "tests/bash/types/test_boolean.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_boolean.sh"
+  },
+  {
+    "name": "null",
+    "category": "Scalar",
+    "construction": "SET",
+    "value": null,
+    "options": {},
+    "operations": [
+      "GET"
+    ],
+    "test": "tests/bash/types/test_null.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_null.sh"
+  },
+  {
+    "name": "timestamp",
+    "category": "Scalar",
+    "construction": "SET",
+    "value": "2026-10-01T00:00:00Z",
+    "options": {},
+    "operations": [
+      "GET"
+    ],
+    "test": "tests/bash/types/test_timestamp.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_timestamp.sh"
+  },
+  {
+    "name": "duration",
+    "category": "Scalar",
+    "construction": "SET",
+    "value": "5s",
+    "options": {},
+    "operations": [
+      "ADD"
+    ],
+    "test": "tests/bash/types/test_duration.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_duration.sh"
+  },
+  {
+    "name": "uuid",
+    "category": "Scalar",
+    "construction": "SET",
+    "value": "550e8400-e29b-41d4-a716-446655440000",
+    "options": {},
+    "operations": [
+      "GET"
+    ],
+    "test": "tests/bash/types/test_uuid.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_uuid.sh"
+  },
+  {
+    "name": "big_integer",
+    "category": "Scalar",
+    "construction": "SET",
+    "value": "1234567890123456789012345678901234567890",
+    "options": {},
+    "operations": [
+      "ADD"
+    ],
+    "test": "tests/bash/types/test_big_integer.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_big_integer.sh"
+  },
+  {
+    "name": "big_decimal",
+    "category": "Scalar",
+    "construction": "SET",
+    "value": "12345678901234567890.000000000000000001",
+    "options": {},
+    "operations": [
+      "ADD",
+      "SUB",
+      "CMP"
+    ],
+    "test": "tests/bash/types/test_big_decimal.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_big_decimal.sh"
+  },
+  {
+    "name": "symbol",
+    "category": "Scalar",
+    "construction": "SET",
+    "value": "ACTIVE",
+    "options": {},
+    "operations": [
+      "GET"
+    ],
+    "test": "tests/bash/types/test_symbol.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_symbol.sh"
+  },
+  {
+    "name": "list",
+    "category": "Collections",
+    "construction": "CREATE",
+    "value": null,
+    "options": {},
+    "operations": [
+      "PUSH_FRONT",
+      "PUSH_BACK",
+      "POP_FRONT",
+      "POP_BACK",
+      "RANGE",
+      "LEN"
+    ],
+    "test": "tests/bash/types/test_list.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_list.sh"
+  },
+  {
+    "name": "array",
+    "category": "Collections",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "typed": true,
+      "element_type": "utf8_string"
+    },
+    "operations": [
+      "APPEND",
+      "SET",
+      "GET",
+      "VALUES",
+      "LEN"
+    ],
+    "test": "tests/bash/types/test_array.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_array.sh"
+  },
+  {
+    "name": "deque",
+    "category": "Collections",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "capacity": 8
+    },
+    "operations": [
+      "PUSH_FRONT",
+      "PUSH_BACK",
+      "POP_FRONT",
+      "POP_BACK",
+      "VALUES",
+      "LEN"
+    ],
+    "test": "tests/bash/types/test_deque.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_deque.sh"
+  },
+  {
+    "name": "ring_buffer",
+    "category": "Collections",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "capacity": 4
+    },
+    "operations": [
+      "PUSH",
+      "VALUES",
+      "LEN"
+    ],
+    "test": "tests/bash/types/test_ring_buffer.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_ring_buffer.sh"
+  },
+  {
+    "name": "tuple",
+    "category": "Collections",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "values": [
+        {
+          "type": "utf8_string",
+          "value": "alpha"
+        },
+        {
+          "type": "integer",
+          "value": 7
+        }
+      ]
+    },
+    "operations": [
+      "GET",
+      "VALUES",
+      "LEN"
+    ],
+    "test": "tests/bash/types/test_tuple.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_tuple.sh"
+  },
+  {
+    "name": "set",
+    "category": "Collections",
+    "construction": "CREATE",
+    "value": null,
+    "options": {},
+    "operations": [
+      "ADD",
+      "REMOVE",
+      "CONTAINS",
+      "MEMBERS",
+      "LEN"
+    ],
+    "test": "tests/bash/types/test_set.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_set.sh"
+  },
+  {
+    "name": "sorted_set",
+    "category": "Collections",
+    "construction": "CREATE",
+    "value": null,
+    "options": {},
+    "operations": [
+      "ADD",
+      "REMOVE",
+      "SCORE",
+      "RANGE"
+    ],
+    "test": "tests/bash/types/test_sorted_set.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_sorted_set.sh"
+  },
+  {
+    "name": "ordered_set",
+    "category": "Collections",
+    "construction": "CREATE",
+    "value": null,
+    "options": {},
+    "operations": [
+      "ADD",
+      "REMOVE",
+      "VALUES"
+    ],
+    "test": "tests/bash/types/test_ordered_set.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_ordered_set.sh"
+  },
+  {
+    "name": "multiset",
+    "category": "Collections",
+    "construction": "CREATE",
+    "value": null,
+    "options": {},
+    "operations": [
+      "ADD",
+      "REMOVE",
+      "COUNT"
+    ],
+    "test": "tests/bash/types/test_multiset.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_multiset.sh"
+  },
+  {
+    "name": "hashmap",
+    "category": "Collections",
+    "construction": "CREATE",
+    "value": null,
+    "options": {},
+    "operations": [
+      "SET",
+      "GET",
+      "DELETE",
+      "KEYS"
+    ],
+    "test": "tests/bash/types/test_hashmap.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_hashmap.sh"
+  },
+  {
+    "name": "ordered_map",
+    "category": "Collections",
+    "construction": "CREATE",
+    "value": null,
+    "options": {},
+    "operations": [
+      "SET",
+      "GET",
+      "DELETE",
+      "ENTRIES"
+    ],
+    "test": "tests/bash/types/test_ordered_map.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_ordered_map.sh"
+  },
+  {
+    "name": "multimap",
+    "category": "Collections",
+    "construction": "CREATE",
+    "value": null,
+    "options": {},
+    "operations": [
+      "ADD",
+      "GET",
+      "REMOVE"
+    ],
+    "test": "tests/bash/types/test_multimap.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_multimap.sh"
+  },
+  {
+    "name": "json",
+    "category": "Structured",
+    "construction": "CREATE",
+    "value": null,
+    "options": {},
+    "operations": [
+      "GET",
+      "SET"
+    ],
+    "test": "tests/bash/types/test_json.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_json.sh"
+  },
+  {
+    "name": "messagepack",
+    "category": "Structured",
+    "construction": "CREATE",
+    "value": null,
+    "options": {},
+    "operations": [
+      "GET"
+    ],
+    "test": "tests/bash/types/test_messagepack.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_messagepack.sh"
+  },
+  {
+    "name": "cbor",
+    "category": "Structured",
+    "construction": "CREATE",
+    "value": null,
+    "options": {},
+    "operations": [
+      "GET"
+    ],
+    "test": "tests/bash/types/test_cbor.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_cbor.sh"
+  },
+  {
+    "name": "record",
+    "category": "Structured",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "schema": [
+        {
+          "name": "name",
+          "type": "utf8_string",
+          "nullable": false
+        },
+        {
+          "name": "age",
+          "type": "integer",
+          "nullable": true
+        }
+      ]
+    },
+    "operations": [
+      "SET",
+      "GET"
+    ],
+    "test": "tests/bash/types/test_record.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_record.sh"
+  },
+  {
+    "name": "matrix",
+    "category": "Structured",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "rows": 2,
+      "cols": 2,
+      "dtype": "float64",
+      "data": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    "operations": [
+      "GET",
+      "SET",
+      "LEN"
+    ],
+    "test": "tests/bash/types/test_matrix.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_matrix.sh"
+  },
+  {
+    "name": "tensor",
+    "category": "Structured",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "shape": [
+        2,
+        2,
+        2
+      ],
+      "dtype": "float64",
+      "data": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ]
+    },
+    "operations": [
+      "GET",
+      "SET",
+      "LEN"
+    ],
+    "test": "tests/bash/types/test_tensor.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_tensor.sh"
+  },
+  {
+    "name": "fifo_queue",
+    "category": "Queues and messaging",
+    "construction": "CREATE",
+    "value": null,
+    "options": {},
+    "operations": [
+      "ENQUEUE",
+      "DEQUEUE",
+      "PEEK",
+      "LEN"
+    ],
+    "test": "tests/bash/types/test_fifo_queue.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_fifo_queue.sh"
+  },
+  {
+    "name": "lifo_stack",
+    "category": "Queues and messaging",
+    "construction": "CREATE",
+    "value": null,
+    "options": {},
+    "operations": [
+      "PUSH",
+      "POP",
+      "PEEK",
+      "LEN"
+    ],
+    "test": "tests/bash/types/test_lifo_stack.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_lifo_stack.sh"
+  },
+  {
+    "name": "priority_queue",
+    "category": "Queues and messaging",
+    "construction": "CREATE",
+    "value": null,
+    "options": {},
+    "operations": [
+      "ENQUEUE",
+      "DEQUEUE",
+      "LEN"
+    ],
+    "test": "tests/bash/types/test_priority_queue.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_priority_queue.sh"
+  },
+  {
+    "name": "blocking_queue",
+    "category": "Queues and messaging",
+    "construction": "CREATE",
+    "value": null,
+    "options": {},
+    "operations": [
+      "ENQUEUE",
+      "DEQUEUE",
+      "LEN",
+      "CLOSE"
+    ],
+    "test": "tests/bash/types/test_blocking_queue.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_blocking_queue.sh"
+  },
+  {
+    "name": "delayed_queue",
+    "category": "Queues and messaging",
+    "construction": "CREATE",
+    "value": null,
+    "options": {},
+    "operations": [
+      "ENQUEUE",
+      "POP_READY",
+      "LEN"
+    ],
+    "test": "tests/bash/types/test_delayed_queue.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_delayed_queue.sh"
+  },
+  {
+    "name": "reliable_queue",
+    "category": "Queues and messaging",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "max_attempts": 3
+    },
+    "operations": [
+      "ENQUEUE",
+      "CLAIM",
+      "ACK",
+      "NACK",
+      "STATS"
+    ],
+    "test": "tests/bash/types/test_reliable_queue.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_reliable_queue.sh"
+  },
+  {
+    "name": "stream",
+    "category": "Queues and messaging",
+    "construction": "CREATE",
+    "value": null,
+    "options": {},
+    "operations": [
+      "ADD",
+      "RANGE",
+      "GROUP_CREATE",
+      "GROUP_READ",
+      "ACK",
+      "PENDING",
+      "LEN"
+    ],
+    "test": "tests/bash/types/test_stream.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_stream.sh"
+  },
+  {
+    "name": "consumer_group",
+    "category": "Queues and messaging",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "name": "workers"
+    },
+    "operations": [
+      "SNAPSHOT"
+    ],
+    "test": "tests/bash/types/test_consumer_group.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_consumer_group.sh"
+  },
+  {
+    "name": "pubsub",
+    "category": "Queues and messaging",
+    "construction": "CREATE",
+    "value": null,
+    "options": {},
+    "operations": [
+      "PUBLISH",
+      "STATS"
+    ],
+    "test": "tests/bash/types/test_pubsub.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_pubsub.sh"
+  },
+  {
+    "name": "persistent_topic",
+    "category": "Queues and messaging",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "max_messages": 100
+    },
+    "operations": [
+      "PUBLISH",
+      "READ"
+    ],
+    "test": "tests/bash/types/test_persistent_topic.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_persistent_topic.sh"
+  },
+  {
+    "name": "event_log",
+    "category": "Queues and messaging",
+    "construction": "CREATE",
+    "value": null,
+    "options": {},
+    "operations": [
+      "APPEND",
+      "READ",
+      "LEN"
+    ],
+    "test": "tests/bash/types/test_event_log.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_event_log.sh"
+  },
+  {
+    "name": "bitmap",
+    "category": "Bit structures",
+    "construction": "CREATE",
+    "value": null,
+    "options": {},
+    "operations": [
+      "SET",
+      "GETBIT",
+      "COUNT"
+    ],
+    "test": "tests/bash/types/test_bitmap.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_bitmap.sh"
+  },
+  {
+    "name": "bit_field",
+    "category": "Bit structures",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "size_bytes": 8
+    },
+    "operations": [
+      "SET",
+      "GET"
+    ],
+    "test": "tests/bash/types/test_bit_field.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_bit_field.sh"
+  },
+  {
+    "name": "bit_set",
+    "category": "Bit structures",
+    "construction": "CREATE",
+    "value": null,
+    "options": {},
+    "operations": [
+      "SET",
+      "GETBIT",
+      "COUNT"
+    ],
+    "test": "tests/bash/types/test_bit_set.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_bit_set.sh"
+  },
+  {
+    "name": "roaring_bitmap",
+    "category": "Bit structures",
+    "construction": "CREATE",
+    "value": null,
+    "options": {},
+    "operations": [
+      "ADD",
+      "REMOVE",
+      "CONTAINS",
+      "VALUES",
+      "CARDINALITY"
+    ],
+    "test": "tests/bash/types/test_roaring_bitmap.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_roaring_bitmap.sh"
+  },
+  {
+    "name": "hyperloglog",
+    "category": "Probabilistic",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "precision": 12
+    },
+    "operations": [
+      "ADD",
+      "COUNT"
+    ],
+    "test": "tests/bash/types/test_hyperloglog.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_hyperloglog.sh"
+  },
+  {
+    "name": "bloom_filter",
+    "category": "Probabilistic",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "expected": 1000,
+      "false_positive_rate": 0.01
+    },
+    "operations": [
+      "ADD",
+      "CONTAINS"
+    ],
+    "test": "tests/bash/types/test_bloom_filter.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_bloom_filter.sh"
+  },
+  {
+    "name": "counting_bloom_filter",
+    "category": "Probabilistic",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "expected": 1000,
+      "false_positive_rate": 0.01
+    },
+    "operations": [
+      "ADD",
+      "REMOVE",
+      "CONTAINS"
+    ],
+    "test": "tests/bash/types/test_counting_bloom_filter.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_counting_bloom_filter.sh"
+  },
+  {
+    "name": "cuckoo_filter",
+    "category": "Probabilistic",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "capacity": 1024
+    },
+    "operations": [
+      "ADD",
+      "REMOVE",
+      "CONTAINS"
+    ],
+    "test": "tests/bash/types/test_cuckoo_filter.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_cuckoo_filter.sh"
+  },
+  {
+    "name": "count_min_sketch",
+    "category": "Probabilistic",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "width": 256,
+      "depth": 4
+    },
+    "operations": [
+      "ADD",
+      "ESTIMATE"
+    ],
+    "test": "tests/bash/types/test_count_min_sketch.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_count_min_sketch.sh"
+  },
+  {
+    "name": "top_k",
+    "category": "Probabilistic",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "k": 5
+    },
+    "operations": [
+      "ADD",
+      "ITEMS"
+    ],
+    "test": "tests/bash/types/test_top_k.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_top_k.sh"
+  },
+  {
+    "name": "t_digest",
+    "category": "Probabilistic",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "compression": 100
+    },
+    "operations": [
+      "ADD",
+      "QUANTILE"
+    ],
+    "test": "tests/bash/types/test_t_digest.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_t_digest.sh"
+  },
+  {
+    "name": "timeseries",
+    "category": "Time series",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "labels": {
+        "service": "api",
+        "env": "test"
+      },
+      "retention_ms": 3600000
+    },
+    "operations": [
+      "ADD",
+      "RANGE",
+      "LAST",
+      "AGGREGATE",
+      "LEN"
+    ],
+    "test": "tests/bash/types/test_timeseries.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_timeseries.sh"
+  },
+  {
+    "name": "counter_series",
+    "category": "Time series",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "labels": {
+        "metric": "requests"
+      }
+    },
+    "operations": [
+      "ADD",
+      "RANGE",
+      "LAST",
+      "AGGREGATE",
+      "LEN"
+    ],
+    "test": "tests/bash/types/test_counter_series.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_counter_series.sh"
+  },
+  {
+    "name": "gauge_series",
+    "category": "Time series",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "labels": {
+        "metric": "cpu"
+      }
+    },
+    "operations": [
+      "SET",
+      "RANGE",
+      "LAST",
+      "AGGREGATE",
+      "LEN"
+    ],
+    "test": "tests/bash/types/test_gauge_series.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_gauge_series.sh"
+  },
+  {
+    "name": "histogram",
+    "category": "Time series",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "bounds": [
+        1,
+        5,
+        10,
+        50,
+        100
+      ]
+    },
+    "operations": [
+      "OBSERVE",
+      "SNAPSHOT"
+    ],
+    "test": "tests/bash/types/test_histogram.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_histogram.sh"
+  },
+  {
+    "name": "timeseries_labels",
+    "category": "Time series",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "labels": {
+        "env": "test",
+        "region": "local"
+      }
+    },
+    "operations": [
+      "GET",
+      "SET"
+    ],
+    "test": "tests/bash/types/test_timeseries_labels.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_timeseries_labels.sh"
+  },
+  {
+    "name": "aggregated_series",
+    "category": "Time series",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "bucket_ms": 1000,
+      "aggregation": "avg"
+    },
+    "operations": [
+      "RANGE",
+      "AGGREGATE"
+    ],
+    "test": "tests/bash/types/test_aggregated_series.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_aggregated_series.sh"
+  },
+  {
+    "name": "geo_point",
+    "category": "Geospatial",
+    "construction": "SET",
+    "value": {
+      "Lat": 14.5995,
+      "Lon": 120.9842
+    },
+    "options": {},
+    "operations": [
+      "DISTANCE"
+    ],
+    "test": "tests/bash/types/test_geo_point.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_geo_point.sh"
+  },
+  {
+    "name": "geo_spatial_index",
+    "category": "Geospatial",
+    "construction": "CREATE",
+    "value": null,
+    "options": {},
+    "operations": [
+      "ADD",
+      "REMOVE",
+      "RADIUS",
+      "BOX",
+      "POLYGON"
+    ],
+    "test": "tests/bash/types/test_geo_spatial_index.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_geo_spatial_index.sh"
+  },
+  {
+    "name": "bounding_box",
+    "category": "Geospatial",
+    "construction": "SET",
+    "value": {
+      "MinLat": 14.0,
+      "MinLon": 120.0,
+      "MaxLat": 15.0,
+      "MaxLon": 122.0
+    },
+    "options": {},
+    "operations": [
+      "CONTAINS"
+    ],
+    "test": "tests/bash/types/test_bounding_box.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_bounding_box.sh"
+  },
+  {
+    "name": "polygon",
+    "category": "Geospatial",
+    "construction": "SET",
+    "value": [
+      {
+        "Lat": 14.5,
+        "Lon": 120.9
+      },
+      {
+        "Lat": 14.7,
+        "Lon": 120.9
+      },
+      {
+        "Lat": 14.6,
+        "Lon": 121.1
+      }
+    ],
+    "options": {},
+    "operations": [
+      "CONTAINS"
+    ],
+    "test": "tests/bash/types/test_polygon.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_polygon.sh"
+  },
+  {
+    "name": "dense_vector",
+    "category": "Vectors",
+    "construction": "SET",
+    "value": [
+      1.0,
+      0.0,
+      0.5
+    ],
+    "options": {},
+    "operations": [
+      "DISTANCE"
+    ],
+    "test": "tests/bash/types/test_dense_vector.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_dense_vector.sh"
+  },
+  {
+    "name": "sparse_vector",
+    "category": "Vectors",
+    "construction": "SET",
+    "value": {
+      "dim": 8,
+      "values": {
+        "1": 0.5,
+        "5": 1.25
+      }
+    },
+    "options": {},
+    "operations": [
+      "GET"
+    ],
+    "test": "tests/bash/types/test_sparse_vector.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_sparse_vector.sh"
+  },
+  {
+    "name": "vector_set",
+    "category": "Vectors",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "dim": 3,
+      "metric": "cosine"
+    },
+    "operations": [
+      "ADD",
+      "REMOVE",
+      "SEARCH",
+      "LEN"
+    ],
+    "test": "tests/bash/types/test_vector_set.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_vector_set.sh"
+  },
+  {
+    "name": "vector_metadata",
+    "category": "Vectors",
+    "construction": "CREATE",
+    "value": null,
+    "options": {},
+    "operations": [
+      "GET",
+      "SET",
+      "DELETE"
+    ],
+    "test": "tests/bash/types/test_vector_metadata.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_vector_metadata.sh"
+  },
+  {
+    "name": "quantized_vector",
+    "category": "Vectors",
+    "construction": "SET",
+    "value": {
+      "Data": [
+        1,
+        2,
+        -3
+      ],
+      "Scale": 0.1,
+      "ZeroPoint": 0
+    },
+    "options": {},
+    "operations": [
+      "DEQUANTIZE"
+    ],
+    "test": "tests/bash/types/test_quantized_vector.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_quantized_vector.sh"
+  },
+  {
+    "name": "btree_index",
+    "category": "Indexes and search",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "degree": 8
+    },
+    "operations": [
+      "INSERT",
+      "DELETE",
+      "SEARCH",
+      "RANGE"
+    ],
+    "test": "tests/bash/types/test_btree_index.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_btree_index.sh"
+  },
+  {
+    "name": "hash_index",
+    "category": "Indexes and search",
+    "construction": "CREATE",
+    "value": null,
+    "options": {},
+    "operations": [
+      "ADD",
+      "REMOVE",
+      "LOOKUP"
+    ],
+    "test": "tests/bash/types/test_hash_index.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_hash_index.sh"
+  },
+  {
+    "name": "radix_tree",
+    "category": "Indexes and search",
+    "construction": "CREATE",
+    "value": null,
+    "options": {},
+    "operations": [
+      "INSERT",
+      "EXACT",
+      "PREFIX"
+    ],
+    "test": "tests/bash/types/test_radix_tree.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_radix_tree.sh"
+  },
+  {
+    "name": "trie",
+    "category": "Indexes and search",
+    "construction": "CREATE",
+    "value": null,
+    "options": {},
+    "operations": [
+      "INSERT",
+      "EXACT",
+      "PREFIX"
+    ],
+    "test": "tests/bash/types/test_trie.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_trie.sh"
+  },
+  {
+    "name": "inverted_index",
+    "category": "Indexes and search",
+    "construction": "CREATE",
+    "value": null,
+    "options": {},
+    "operations": [
+      "INDEX",
+      "REMOVE",
+      "SEARCH"
+    ],
+    "test": "tests/bash/types/test_inverted_index.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_inverted_index.sh"
+  },
+  {
+    "name": "hnsw_index",
+    "category": "Indexes and search",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "dim": 3,
+      "metric": "cosine",
+      "m": 8,
+      "ef_search": 32
+    },
+    "operations": [
+      "ADD",
+      "REMOVE",
+      "SEARCH"
+    ],
+    "test": "tests/bash/types/test_hnsw_index.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_hnsw_index.sh"
+  },
+  {
+    "name": "flat_vector_index",
+    "category": "Indexes and search",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "dim": 3,
+      "metric": "cosine"
+    },
+    "operations": [
+      "ADD",
+      "REMOVE",
+      "SEARCH",
+      "LEN"
+    ],
+    "test": "tests/bash/types/test_flat_vector_index.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_flat_vector_index.sh"
+  },
+  {
+    "name": "geospatial_secondary_index",
+    "category": "Indexes and search",
+    "construction": "CREATE",
+    "value": null,
+    "options": {},
+    "operations": [
+      "ADD",
+      "REMOVE",
+      "RADIUS",
+      "BOX",
+      "POLYGON"
+    ],
+    "test": "tests/bash/types/test_geospatial_secondary_index.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_geospatial_secondary_index.sh"
+  },
+  {
+    "name": "secondary_index",
+    "category": "Indexes and search",
+    "construction": "CREATE",
+    "value": null,
+    "options": {},
+    "operations": [
+      "ADD",
+      "LOOKUP"
+    ],
+    "test": "tests/bash/types/test_secondary_index.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_secondary_index.sh"
+  },
+  {
+    "name": "full_text_document",
+    "category": "Indexes and search",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "id": "doc-1",
+      "metadata": {
+        "source": "bash-test"
+      }
+    },
+    "operations": [
+      "ADD_TEXT",
+      "ADD_TAG",
+      "ADD_NUMERIC",
+      "GET",
+      "SNAPSHOT"
+    ],
+    "test": "tests/bash/types/test_full_text_document.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_full_text_document.sh"
+  },
+  {
+    "name": "tag_field",
+    "category": "Indexes and search",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "name": "tags",
+      "values": [
+        "go",
+        "database"
+      ]
+    },
+    "operations": [
+      "SET",
+      "GET"
+    ],
+    "test": "tests/bash/types/test_tag_field.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_tag_field.sh"
+  },
+  {
+    "name": "numeric_field",
+    "category": "Indexes and search",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "name": "score",
+      "value": 42.5
+    },
+    "operations": [
+      "SET",
+      "GET"
+    ],
+    "test": "tests/bash/types/test_numeric_field.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_numeric_field.sh"
+  },
+  {
+    "name": "text_field",
+    "category": "Indexes and search",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "name": "body",
+      "value": "hello amaquet",
+      "weight": 1.5
+    },
+    "operations": [
+      "SET",
+      "GET"
+    ],
+    "test": "tests/bash/types/test_text_field.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_text_field.sh"
+  },
+  {
+    "name": "adjacency_set",
+    "category": "Graph, synchronization, and network",
+    "construction": "CREATE",
+    "value": null,
+    "options": {},
+    "operations": [
+      "ADD",
+      "REMOVE",
+      "NEIGHBORS"
+    ],
+    "test": "tests/bash/types/test_adjacency_set.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_adjacency_set.sh"
+  },
+  {
+    "name": "atomic_counter",
+    "category": "Graph, synchronization, and network",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "initial": 10
+    },
+    "operations": [
+      "ADD",
+      "LOAD",
+      "CAS"
+    ],
+    "test": "tests/bash/types/test_atomic_counter.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_atomic_counter.sh"
+  },
+  {
+    "name": "lease",
+    "category": "Graph, synchronization, and network",
+    "construction": "CREATE",
+    "value": null,
+    "options": {},
+    "operations": [
+      "ACQUIRE",
+      "RENEW",
+      "RELEASE",
+      "HELD"
+    ],
+    "test": "tests/bash/types/test_lease.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_lease.sh"
+  },
+  {
+    "name": "lock",
+    "category": "Graph, synchronization, and network",
+    "construction": "CREATE",
+    "value": null,
+    "options": {},
+    "operations": [
+      "TRY_LOCK",
+      "RENEW",
+      "UNLOCK"
+    ],
+    "test": "tests/bash/types/test_lock.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_lock.sh"
+  },
+  {
+    "name": "barrier",
+    "category": "Graph, synchronization, and network",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "target": 1
+    },
+    "operations": [
+      "WAIT"
+    ],
+    "test": "tests/bash/types/test_barrier.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_barrier.sh"
+  },
+  {
+    "name": "semaphore",
+    "category": "Graph, synchronization, and network",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "limit": 2
+    },
+    "operations": [
+      "ACQUIRE",
+      "TRY_ACQUIRE",
+      "RELEASE",
+      "STATS"
+    ],
+    "test": "tests/bash/types/test_semaphore.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_semaphore.sh"
+  },
+  {
+    "name": "rate_limit_bucket",
+    "category": "Graph, synchronization, and network",
+    "construction": "CREATE",
+    "value": null,
+    "options": {
+      "capacity": 5,
+      "refill_per_second": 2
+    },
+    "operations": [
+      "ALLOW",
+      "REMAINING"
+    ],
+    "test": "tests/bash/types/test_rate_limit_bucket.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_rate_limit_bucket.sh"
+  },
+  {
+    "name": "cidr_network",
+    "category": "Graph, synchronization, and network",
+    "construction": "SET",
+    "value": "10.0.0.0/8",
+    "options": {},
+    "operations": [
+      "CONTAINS"
+    ],
+    "test": "tests/bash/types/test_cidr_network.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_cidr_network.sh"
+  },
+  {
+    "name": "url",
+    "category": "Graph, synchronization, and network",
+    "construction": "SET",
+    "value": "https://example.com:8443/path?q=amaquet",
+    "options": {},
+    "operations": [
+      "HOST",
+      "SCHEME"
+    ],
+    "test": "tests/bash/types/test_url.sh",
+    "fuzzer": "tests/bash/fuzz/fuzz_url.sh"
+  }
+]
