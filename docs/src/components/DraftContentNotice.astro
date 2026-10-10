@@ -1,0 +1,7 @@
+---
+import DefaultDraftContentNotice from "@astrojs/starlight/components/DraftContentNotice.astro"
+
+const { starlightRoute } = Astro.locals
+---
+
+{starlightRoute.entry.id !== "404" && <DefaultDraftContentNotice />}
