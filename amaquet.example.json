@@ -1,0 +1,53 @@
+{
+  "protocol": {
+    "host": "127.0.0.1",
+    "port": 13378,
+    "tls": false,
+    "tls_cert_file": "./certs/server.crt",
+    "tls_key_file": "./certs/server.key",
+    "require_auth": true,
+    "allow_insecure_auth": false,
+    "read_timeout_ms": 120000,
+    "write_timeout_ms": 30000
+  },
+  "admin": {
+    "host": "127.0.0.1",
+    "port": 13379,
+    "tls": false,
+    "tls_cert_file": "./certs/admin.crt",
+    "tls_key_file": "./certs/admin.key",
+    "allow_insecure": false,
+    "metrics_require_auth": true,
+    "max_sessions": 10000,
+    "auth_failures_per_minute": 20
+  },
+  "security": {
+    "bootstrap_token": "CHANGE_ME",
+    "public_key_file": "./keys/amaquet-public.pem",
+    "private_key_file": "./keys/amaquet-private.pem"
+  },
+  "persistence": {
+    "aof_enabled": true,
+    "aof_path": "./data/amaquet.aof",
+    "fsync": "everysec"
+  },
+  "limits": {
+    "max_connections": 10000,
+    "max_payload_bytes": 67108864,
+    "max_memory_bytes": 0,
+    "eviction_policy": "noeviction",
+    "max_inflight_requests": 4096,
+    "max_inflight_per_connection": 128,
+    "max_inflight_payload_bytes": 268435456,
+    "max_pending_upload_bytes": 1073741824,
+    "upload_ttl_ms": 600000,
+    "command_timeout_ms": 30000
+  },
+  "compression": {
+    "enabled": true,
+    "algorithm": "auto",
+    "min_bytes": 1024,
+    "min_savings_percent": 8
+  },
+  "data_dir": "./data"
+}
