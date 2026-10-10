@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title description">
+  <title id="title">Amaquet documentation</title>
+  <desc id="description">Official documentation for the standalone typed in-memory database written in Go.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#111111" />
+      <stop offset="1" stop-color="#202020" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#08b9ed" />
+      <stop offset="1" stop-color="#0b8fd0" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#background)" />
+  <circle cx="1080" cy="-20" r="310" fill="#08b9ed" opacity="0.12" />
+  <circle cx="1160" cy="570" r="230" fill="#08b9ed" opacity="0.08" />
+  <rect x="86" y="84" width="148" height="148" rx="32" fill="url(#accent)" />
+  <text x="86" y="344" fill="#ffffff" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="72" font-weight="700" letter-spacing="-2">Amaquet</text>
+  <text x="90" y="404" fill="#08b9ed" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="30" font-weight="600">Official documentation</text>
+  <text x="90" y="474" fill="#d4d4d4" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="25">Standalone typed in-memory database written in Go</text>
+  <path d="M90 536H1110" stroke="#3d3d3d" stroke-width="2" />
+  <text x="90" y="578" fill="#a3a3a3" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="22">amaquet.newfoundcodes.com</text>
+</svg>
