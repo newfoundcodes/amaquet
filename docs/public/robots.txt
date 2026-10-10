@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://amaquet.newfoundcodes.com/sitemap.xml
