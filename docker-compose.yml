@@ -1,0 +1,29 @@
+name: amaquet
+
+services:
+  amaquet:
+    build: .
+    image: amaquet:local
+    environment:
+      # The container must listen on its network interface for Docker port
+      # publishing. Host publishing is restricted to loopback below, so these
+      # explicit development overrides do not expose plaintext auth publicly.
+      AMAQUET_HOST: "0.0.0.0"
+      AMAQUET_ADMIN_HOST: "0.0.0.0"
+      AMAQUET_ALLOW_INSECURE_AUTH: "true"
+      AMAQUET_ADMIN_ALLOW_INSECURE: "true"
+      AMAQUET_BOOTSTRAP_TOKEN: "${AMAQUET_BOOTSTRAP_TOKEN:?Set AMAQUET_BOOTSTRAP_TOKEN in your environment}"
+      AMAQUET_AOF_ENABLED: "true"
+      AMAQUET_AOF_PATH: "/app/data/amaquet.aof"
+      AMAQUET_AOF_FSYNC: "everysec"
+      AMAQUET_MAX_MEMORY_BYTES: "${AMAQUET_MAX_MEMORY_BYTES:-0}"
+      AMAQUET_EVICTION_POLICY: "${AMAQUET_EVICTION_POLICY:-noeviction}"
+    ports:
+      - "127.0.0.1:13378:13378"
+      - "127.0.0.1:13379:13379"
+    volumes:
+      - amaquet-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  amaquet-data:
