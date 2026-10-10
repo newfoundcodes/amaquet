@@ -1,0 +1,33 @@
+{
+  "name": "@amaquet/docs",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "generate:ai": "node scripts/generate-ai-docs.mjs",
+    "check:ai": "node scripts/generate-ai-docs.mjs --check",
+    "check:headings": "node scripts/check-heading-descriptions.mjs",
+    "prebuild": "npm run generate:ai && npm run check:headings",
+    "predev": "npm run generate:ai && npm run check:headings",
+    "dev": "astro dev",
+    "build": "astro build && node scripts/check-built-links.mjs",
+    "lint": "eslint . --max-warnings=0",
+    "format": "prettier --write .",
+    "preview": "astro preview"
+  },
+  "devDependencies": {
+    "@astrojs/markdown-remark": "7.3.1",
+    "@astrojs/starlight": "0.42.5",
+    "@eslint/js": "^10.0.1",
+    "astro": "7.3.5",
+    "astro-mermaid": "^2.1.0",
+    "eslint": "^10.12.0",
+    "eslint-plugin-astro": "^3.2.1",
+    "globals": "^17.13.0",
+    "mermaid": "^11.17.2",
+    "prettier": "^3.9.9",
+    "prettier-plugin-astro": "^1.1.0",
+    "typescript-eslint": "^8.71.0"
+  },
+  "packageManager": "npm@10.9.2"
+}
