@@ -1,0 +1,25 @@
+{
+  "protocol": {
+    "host": "127.0.0.1",
+    "port": 13378,
+    "tls": false,
+    "require_auth": true
+  },
+  "admin": {
+    "host": "127.0.0.1",
+    "port": 13379,
+    "tls": false,
+    "metrics_require_auth": true
+  },
+  "security": {
+    "bootstrap_token": "",
+    "public_key_file": "",
+    "private_key_file": ""
+  },
+  "persistence": {
+    "aof_enabled": true,
+    "aof_path": "/var/lib/amaquet/amaquet.aof",
+    "fsync": "everysec"
+  },
+  "data_dir": "/var/lib/amaquet"
+}
