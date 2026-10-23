@@ -189,16 +189,16 @@ Removal deletes package-owned executables and the unit. Debian normally retains 
 The Windows release currently contains a 64-bit (`amd64`) MSI. It installs into:
 
 ```text
-C:\Program Files\Amaquet\amaquet.exe
-C:\Program Files\Amaquet\amaquet-cli.exe
-C:\Program Files\Amaquet\amaquet-keygen.exe
-C:\Program Files\Amaquet\amaquet-restore.exe
+C:\Program Files\Amaquet\bin\amaquet.exe
+C:\Program Files\Amaquet\bin\amaquet-cli.exe
+C:\Program Files\Amaquet\bin\amaquet-keygen.exe
+C:\Program Files\Amaquet\bin\amaquet-restore.exe
 C:\Program Files\Amaquet\amaquet.example.json
 C:\Program Files\Amaquet\README.md
 C:\Program Files\Amaquet\LICENSE
 ```
 
-The MSI does not create a Windows service, scheduled task, Start Menu shortcut, or PATH entry. Run commands with their full paths or add `C:\Program Files\Amaquet` to PATH yourself.
+The MSI does not create a Windows service, scheduled task, or Start Menu shortcut. It adds `C:\Program Files\Amaquet\bin` to the system `PATH`. Open a new PowerShell or Command Prompt window after installation so it receives the updated environment.
 
 ### Install through the Windows Installer UI
 
@@ -208,9 +208,10 @@ Use the graphical Windows Installer when you want the normal installation and ma
 2. Open the `.msi` file.
 3. Approve the administrator prompt.
 4. Follow the installer steps.
-5. Open a new PowerShell window before testing PATH changes.
+5. On the final page, confirm that installation completed successfully.
+6. Open a new PowerShell window before testing the PATH change.
 
-The MSI embeds the Amaquet logo as its Add/Remove Programs icon and installs per machine under `C:\Program Files\Amaquet`.
+The MSI embeds the Amaquet logo as its Add/Remove Programs icon, installs per machine under `C:\Program Files\Amaquet`, and uses the standard Windows Installer completion page to report a successful installation.
 
 ### Install silently
 
@@ -229,22 +230,15 @@ Open the MSI again and choose **Repair** when Windows displays maintenance optio
 Verify the binaries:
 
 ```powershell
-& 'C:\Program Files\Amaquet\amaquet.exe' -version
-& 'C:\Program Files\Amaquet\amaquet-cli.exe' -h
-```
-
-For the current PowerShell session only:
-
-```powershell
-$env:Path += ';C:\Program Files\Amaquet'
 amaquet.exe -version
+amaquet-cli.exe -h
 ```
 
 To start Amaquet, create a configuration using Windows paths:
 
 ```powershell
-& 'C:\Program Files\Amaquet\amaquet.exe' --init-config --config "$env:USERPROFILE\amaquet\amaquet.json"
-& 'C:\Program Files\Amaquet\amaquet.exe' --config "$env:USERPROFILE\amaquet\amaquet.json"
+& 'C:\Program Files\Amaquet\bin\amaquet.exe' --init-config --config "$env:USERPROFILE\amaquet\amaquet.json"
+& 'C:\Program Files\Amaquet\bin\amaquet.exe' --config "$env:USERPROFILE\amaquet\amaquet.json"
 ```
 
 Save the bootstrap token printed during initialization. Press `Ctrl-C` to stop the foreground server.
@@ -266,7 +260,7 @@ With the original MSI available, you can uninstall silently:
 msiexec.exe /x .\amaquet-VERSION-windows-amd64.msi /qn /norestart /l*v .\amaquet-uninstall.log
 ```
 
-Uninstallation removes files under `C:\Program Files\Amaquet`, but does not remove configuration, AOF data, or other files created under your user profile or another directory. Stop the server and back up data first.
+Uninstallation removes files under `C:\Program Files\Amaquet` and removes the Amaquet `bin` entry from the system `PATH`. It does not remove configuration, AOF data, or other files created under your user profile or another directory. Stop the server and back up data first.
 
 ## macOS packages
 
@@ -533,6 +527,6 @@ Before replacing a binary or changing persistence settings, stop Amaquet cleanly
 | CLI connection refused | Confirm the server is running and the URI port matches `protocol.port`. |
 | Authentication failure | Use the initialization token, current `data_dir/bootstrap-token`, or a permanent API key. |
 | macOS cannot verify the package | The current package is not notarized. Confirm its source, then use Finder **Open** or **Privacy & Security → Open Anyway**. |
-| Windows cannot find `amaquet` | The MSI does not modify PATH; use the full path or add `C:\Program Files\Amaquet` to PATH. |
+| Windows cannot find `amaquet` | Open a new terminal after installation so it receives the updated system PATH, then confirm that `C:\Program Files\Amaquet\bin` is present. |
 
 Continue with [Quick start](quickstart.md), [Configuration](configuration.md), [Authentication and identity](../protocol/authentication.md), and [Production deployment](../operations/deployment.md).
