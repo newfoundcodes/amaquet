@@ -157,6 +157,90 @@ After changing `/etc/amaquet/amaquet.json`, restart the service because Amaquet 
 sudo systemctl restart amaquetd
 ```
 
+### Test the Debian installation
+
+Run these checks on the installed host. Use a test VM or snapshot if you want to exercise installation, reboot, and removal repeatedly.
+
+Confirm the package metadata and installed file list:
+
+```bash
+dpkg-query -W -f='${Status} ${Version} ${Architecture}\n' amaquet
+dpkg -L amaquet
+```
+
+The package should report `install ok installed`. The architecture should match the package you selected: `i386` for the `amd` asset, `amd64` for the `amd64` asset, or `arm64` for the `arm64` asset.
+
+Confirm the service account, executable, working directory, and configuration path:
+
+```bash
+sudo systemctl show amaquetd \
+  -p User -p Group -p ExecStart -p WorkingDirectory -p Restart
+```
+
+The expected values are the `amaquet` user and group, `/usr/bin/amaquet --config /etc/amaquet/amaquet.json`, `/var/lib/amaquet`, and `on-failure`.
+
+Because the package deliberately does not start or enable the service automatically, start it explicitly for the first test:
+
+```bash
+sudo systemctl enable --now amaquetd
+systemctl is-enabled amaquetd
+systemctl is-active amaquetd
+sudo systemctl status amaquetd --no-pager
+```
+
+The last three commands should report `enabled`, `active`, and a running service. Verify that both loopback listeners are open:
+
+```bash
+sudo ss -lntp | grep -E '127\.0\.0\.1:(13378|13379)'
+```
+
+Check the unauthenticated health and readiness endpoints:
+
+```bash
+curl --fail --silent --show-error http://127.0.0.1:13379/api/health
+curl --fail --silent --show-error http://127.0.0.1:13379/api/ready
+```
+
+The service creates the bootstrap token in its data directory on first start. Use it for a local authenticated protocol check, then remove it from the shell environment:
+
+```bash
+export AMAQUET_BOOTSTRAP_TOKEN="$(sudo cat /var/lib/amaquet/bootstrap-token)"
+
+amaquet-cli \
+  -uri amaquet://127.0.0.1:13378 \
+  -api-key "$AMAQUET_BOOTSTRAP_TOKEN" \
+  PING '{}'
+
+amaquet-cli \
+  -uri amaquet://127.0.0.1:13378 \
+  -api-key "$AMAQUET_BOOTSTRAP_TOKEN" \
+  SET '{"key":"debian-install-test","type":"utf8_string","value":"working"}'
+
+amaquet-cli \
+  -uri amaquet://127.0.0.1:13378 \
+  -api-key "$AMAQUET_BOOTSTRAP_TOKEN" \
+  GET '{"key":"debian-install-test"}'
+
+unset AMAQUET_BOOTSTRAP_TOKEN
+```
+
+Do not treat the bootstrap token as a permanent application credential. Create a permanent API key through the authenticated admin API and protect the token file and generated data directory.
+
+Inspect service logs if startup, authentication, or persistence checks fail:
+
+```bash
+sudo journalctl -u amaquetd -b --no-pager
+sudo journalctl -u amaquetd -f
+```
+
+Finally, test that the enabled service returns after a reboot in a disposable test environment:
+
+```bash
+sudo reboot
+```
+
+After logging in again, run `systemctl is-active amaquetd` and repeat the health check. The packaged unit is configured with `Restart=on-failure`, but a clean stop with `systemctl stop amaquetd` should remain stopped until you start it again.
+
 The packaged configuration is intentionally loopback-only and does not configure TLS. Keep the listeners local unless you replace the configuration with a reviewed TLS-enabled deployment profile. For a local, foreground installation instead, use:
 
 ```bash
@@ -263,6 +347,103 @@ Invoke-RestMethod http://127.0.0.1:13379/api/health
 Invoke-RestMethod http://127.0.0.1:13379/api/ready
 ```
 
+### Test the Windows installation
+
+Run these checks from an elevated PowerShell window. Open a new terminal after installation so it receives the updated system `PATH`; an already-open terminal retains its previous environment.
+
+Confirm the service definition, account, startup mode, executable, and arguments:
+
+```powershell
+Get-CimInstance Win32_Service -Filter "Name='Amaquet'" |
+  Select-Object Name, State, StartMode, StartName, PathName
+
+sc.exe qc Amaquet
+```
+
+The expected values are service name `Amaquet`, startup mode `AUTO_START`, account `NT AUTHORITY\LocalService`, and the selected installation's `bin\amaquet.exe` with `--config "C:\ProgramData\Amaquet\amaquet.json"`.
+
+Verify that the binaries are on the system PATH and can be executed:
+
+```powershell
+Get-Command amaquet.exe
+Get-Command amaquet-cli.exe
+amaquet.exe -version
+amaquet-cli.exe -h
+```
+
+If `Get-Command` cannot find Amaquet, inspect the machine PATH and start another terminal after correcting the installation:
+
+```powershell
+[Environment]::GetEnvironmentVariable("Path", "Machine") -split ";"
+```
+
+Verify that the service listeners are open and restricted to loopback:
+
+```powershell
+Get-NetTCPConnection -State Listen -LocalPort 13378,13379
+```
+
+Run an authenticated protocol check with the bootstrap token:
+
+```powershell
+$token = Get-Content "$env:ProgramData\Amaquet\data\bootstrap-token"
+
+amaquet-cli.exe `
+  -uri amaquet://127.0.0.1:13378 `
+  -api-key $token `
+  PING '{}'
+
+amaquet-cli.exe `
+  -uri amaquet://127.0.0.1:13378 `
+  -api-key $token `
+  SET '{"key":"windows-install-test","type":"utf8_string","value":"working"}'
+
+amaquet-cli.exe `
+  -uri amaquet://127.0.0.1:13378 `
+  -api-key $token `
+  GET '{"key":"windows-install-test"}'
+
+Remove-Variable token
+```
+
+Test the service lifecycle and automatic startup:
+
+```powershell
+Stop-Service -Name Amaquet
+Get-Service -Name Amaquet
+
+Start-Service -Name Amaquet
+Restart-Service -Name Amaquet
+Get-Service -Name Amaquet
+```
+
+For the reboot test, use a disposable test machine or VM:
+
+```powershell
+Restart-Computer
+```
+
+After Windows starts, open an elevated PowerShell window and confirm that `Get-Service -Name Amaquet` reports `Running`. The installer configures the service for automatic startup and starts it during installation.
+
+If the service fails, inspect Windows Service Control Manager events and the MSI log:
+
+```powershell
+Get-WinEvent -LogName System -MaxEvents 100 |
+  Where-Object { $_.ProviderName -match "Service Control Manager" } |
+  Format-List TimeCreated, Id, LevelDisplayName, Message
+
+notepad .\amaquet-install.log
+```
+
+Do not start a second Amaquet process against the service's data directory while the service is running. To test foreground execution, stop the service first:
+
+```powershell
+Stop-Service -Name Amaquet
+& 'C:\Program Files\Amaquet\bin\amaquet.exe' --config "$env:ProgramData\Amaquet\amaquet.json"
+```
+
+Press `Ctrl-C` to stop the foreground process, then start the service again when finished.
+
 To run Amaquet manually in a console, stop the service first so two processes do not use the same data directory or AOF:
 
 ```powershell
@@ -285,8 +466,10 @@ To start Amaquet, create a configuration using Windows paths:
 
 ```powershell
 Stop-Service -Name Amaquet
-& 'C:\Program Files\Amaquet\bin\amaquet.exe' --init-config --config "$env:USERPROFILE\amaquet\amaquet.json"
-& 'C:\Program Files\Amaquet\bin\amaquet.exe' --config "$env:USERPROFILE\amaquet\amaquet.json"
+New-Item -ItemType Directory -Force "$env:USERPROFILE\amaquet" | Out-Null
+Set-Location "$env:USERPROFILE\amaquet"
+& 'C:\Program Files\Amaquet\bin\amaquet.exe' --init-config --config .\amaquet.json
+& 'C:\Program Files\Amaquet\bin\amaquet.exe' --config .\amaquet.json
 ```
 
 Save the bootstrap token printed during initialization. Press `Ctrl-C` to stop the foreground server.
@@ -387,11 +570,97 @@ The package installs the binaries but does not start a server, so launch Amaquet
 
 ```bash
 mkdir -p "$HOME/amaquet"
-amaquet --init-config --config "$HOME/amaquet/amaquet.json"
-amaquet --config "$HOME/amaquet/amaquet.json"
+cd "$HOME/amaquet"
+amaquet --init-config --config ./amaquet.json
+amaquet --config ./amaquet.json
 ```
 
 The default listeners bind to loopback. The initialization command prints a bootstrap token once and uses a relative `data` directory unless the configuration changes it. Review [Configuration](configuration.md) before exposing a listener.
+
+### Test the macOS installation
+
+The macOS package does not install a launch daemon, launch agent, background service, or persistent configuration. The test therefore covers the package receipt, architecture, executable permissions, foreground startup, listeners, health checks, authentication, and clean shutdown.
+
+Confirm the package receipt and package-owned files:
+
+```bash
+pkgutil --pkg-info com.newfoundcodes.amaquet
+pkgutil --files com.newfoundcodes.amaquet
+```
+
+Verify the executables and their permissions:
+
+```bash
+command -v amaquet
+command -v amaquet-cli
+amaquet -version
+amaquet-cli -h
+ls -l \
+  /usr/local/bin/amaquet \
+  /usr/local/bin/amaquet-cli \
+  /usr/local/bin/amaquet-keygen \
+  /usr/local/bin/amaquet-restore
+```
+
+On an Intel Mac, `uname -m` should return `x86_64`; on Apple Silicon it should return `arm64`. For the universal package, verify that the main binary contains both slices:
+
+```bash
+uname -m
+file /usr/local/bin/amaquet
+lipo -archs /usr/local/bin/amaquet
+```
+
+The universal binary should report both `x86_64` and `arm64` from `lipo -archs`. An architecture-specific package should report only the architecture it was built for.
+
+Start a controlled foreground test from a dedicated directory. The `cd` is important because the generated configuration uses a relative `data` directory by default:
+
+```bash
+mkdir -p "$HOME/amaquet"
+cd "$HOME/amaquet"
+amaquet --init-config --config ./amaquet.json
+amaquet --config ./amaquet.json
+```
+
+The second command remains running. Keep it open and use a second Terminal window for the checks below. The initialization command prints the bootstrap token once; save it securely before starting the server.
+
+In the second Terminal window, verify that both loopback listeners are open:
+
+```bash
+lsof -nP -iTCP:13378 -sTCP:LISTEN
+lsof -nP -iTCP:13379 -sTCP:LISTEN
+```
+
+Check health and readiness:
+
+```bash
+curl --fail --silent --show-error http://127.0.0.1:13379/api/health
+curl --fail --silent --show-error http://127.0.0.1:13379/api/ready
+```
+
+Use the token printed during initialization for an authenticated protocol check. With the default working directory above, the token is stored under `$HOME/amaquet/data`:
+
+```bash
+export AMAQUET_BOOTSTRAP_TOKEN="$(cat "$HOME/amaquet/data/bootstrap-token")"
+
+amaquet-cli \
+  -uri amaquet://127.0.0.1:13378 \
+  -api-key "$AMAQUET_BOOTSTRAP_TOKEN" \
+  PING '{}'
+
+amaquet-cli \
+  -uri amaquet://127.0.0.1:13378 \
+  -api-key "$AMAQUET_BOOTSTRAP_TOKEN" \
+  SET '{"key":"macos-install-test","type":"utf8_string","value":"working"}'
+
+amaquet-cli \
+  -uri amaquet://127.0.0.1:13378 \
+  -api-key "$AMAQUET_BOOTSTRAP_TOKEN" \
+  GET '{"key":"macos-install-test"}'
+
+unset AMAQUET_BOOTSTRAP_TOKEN
+```
+
+Press `Ctrl-C` in the first Terminal window to stop the server, then rerun the `lsof` commands. They should produce no output. There is no macOS service status command for this package because it does not register a service.
 
 ### Uninstall
 
