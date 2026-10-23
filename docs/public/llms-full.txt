@@ -14901,7 +14901,7 @@ These conventions apply across the top-level commands. Type-specific operation a
 | `type` | One of the stable names returned by `TYPES`, such as `integer`, `json`, or `fifo_queue`. |
 | `value` | A direct value whose JSON representation matches that type, or a nested wire-value object when used inside a composite type. |
 | `ttl_ms` | A relative lifetime accepted as numeric milliseconds or a Go duration string such as `"2h"`. For `SET`, `CREATE`, `CAS`, and `BLOB_BEGIN`, only a positive parsed duration creates expiry; omitted, zero, negative, or unparsable values result in no expiry. `EXPIRE` is stricter and rejects non-positive values. |
-| `expires_at_unix_nano` | Advanced absolute expiry timestamp used by replayed journal requests. It takes precedence over `ttl_ms` when present. |
+| `expires_at_unix_nano` | Advanced absolute expiry timestamp used by replayed journal requests. A positive value takes precedence over `ttl_ms`. |
 | `nx` | Conditional write: succeed only when the key does not exist as a live key. Defaults to `false`. |
 | `xx` | Conditional write: succeed only when the key already exists as a live key. Defaults to `false`. |
 | `cursor` | Opaque `SCAN` continuation token. Treat it as an uninterpreted string. |
