@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package
+    Name="Amaquet"
+    Manufacturer="Newfoundcodes"
+    Version="$(var.ProductVersion)"
+    UpgradeCode="7B7F7DD4-7B27-4B1C-A9AC-9E8B320C0F11"
+    Platform="x64"
+    Scope="perMachine">
+
+    <!-- The standard MSI maintenance entry provides uninstall and repair. -->
+    <MajorUpgrade DowngradeErrorMessage="A newer version of Amaquet is already installed." />
+    <Icon Id="AmaquetIcon" SourceFile="$(var.SourceDir)\amaquet.ico" />
+    <Property Id="ARPPRODUCTICON" Value="AmaquetIcon" />
+
+    <Feature Id="MainFeature" Title="Amaquet" Level="1">
+      <ComponentGroupRef Id="AmaquetFiles" />
+    </Feature>
+  </Package>
+
+  <Fragment>
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="Amaquet" />
+    </StandardDirectory>
+
+    <ComponentGroup Id="AmaquetFiles" Directory="INSTALLFOLDER">
+      <Component Id="AmaquetServer">
+        <File Id="AmaquetServerExe" Source="$(var.SourceDir)\amaquet.exe" KeyPath="yes" />
+      </Component>
+      <Component Id="AmaquetCli">
+        <File Id="AmaquetCliExe" Source="$(var.SourceDir)\amaquet-cli.exe" KeyPath="yes" />
+      </Component>
+      <Component Id="AmaquetKeygen">
+        <File Id="AmaquetKeygenExe" Source="$(var.SourceDir)\amaquet-keygen.exe" KeyPath="yes" />
+      </Component>
+      <Component Id="AmaquetRestore">
+        <File Id="AmaquetRestoreExe" Source="$(var.SourceDir)\amaquet-restore.exe" KeyPath="yes" />
+      </Component>
+      <Component Id="AmaquetExampleConfig">
+        <File Id="AmaquetExampleConfigFile" Source="$(var.SourceDir)\amaquet.example.json" KeyPath="yes" />
+      </Component>
+      <Component Id="AmaquetReadme">
+        <File Id="AmaquetReadmeFile" Source="$(var.SourceDir)\README.md" KeyPath="yes" />
+      </Component>
+      <Component Id="AmaquetLicense">
+        <File Id="AmaquetLicenseFile" Source="$(var.SourceDir)\LICENSE" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>
