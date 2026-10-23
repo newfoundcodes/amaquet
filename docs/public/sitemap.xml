@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://amaquet.newfoundcodes.com/</loc><lastmod>2026-10-11</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/architecture/</loc><lastmod>2026-10-10</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/concepts/architecture/</loc><lastmod>2026-10-10</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/concepts/compression/</loc><lastmod>2026-10-10</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/concepts/engine-internals/</loc><lastmod>2026-10-04</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/concepts/keyspace/</loc><lastmod>2026-10-10</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/concepts/memory-model/</loc><lastmod>2026-10-10</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/concepts/persistence/</loc><lastmod>2026-10-06</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/concepts/security/</loc><lastmod>2026-10-06</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/concepts/why-amaquet/</loc></url>
+  <url><loc>https://amaquet.newfoundcodes.com/architecture/</loc><lastmod>2026-10-11</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/concepts/architecture/</loc><lastmod>2026-10-11</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/concepts/compression/</loc><lastmod>2026-10-11</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/concepts/engine-internals/</loc><lastmod>2026-10-11</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/concepts/keyspace/</loc><lastmod>2026-10-11</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/concepts/memory-model/</loc><lastmod>2026-10-11</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/concepts/persistence/</loc><lastmod>2026-10-11</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/concepts/security/</loc><lastmod>2026-10-11</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/concepts/why-amaquet/</loc><lastmod>2026-10-11</lastmod></url>
   <url><loc>https://amaquet.newfoundcodes.com/data-types/</loc><lastmod>2026-10-11</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/data-types/bit-structures/</loc><lastmod>2026-10-04</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/data-types/collections/</loc><lastmod>2026-10-04</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/data-types/geospatial/</loc><lastmod>2026-10-04</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/data-types/graph-synchronization-and-network/</loc><lastmod>2026-10-04</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/data-types/indexes-and-search/</loc><lastmod>2026-10-04</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/data-types/bit-structures/</loc><lastmod>2026-10-11</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/data-types/collections/</loc><lastmod>2026-10-11</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/data-types/geospatial/</loc><lastmod>2026-10-11</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/data-types/graph-synchronization-and-network/</loc><lastmod>2026-10-11</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/data-types/indexes-and-search/</loc><lastmod>2026-10-11</lastmod></url>
   <url><loc>https://amaquet.newfoundcodes.com/data-types/operations/</loc><lastmod>2026-10-11</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/data-types/probabilistic/</loc><lastmod>2026-10-04</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/data-types/queues-and-messaging/</loc><lastmod>2026-10-04</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/data-types/scalar/</loc><lastmod>2026-10-04</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/data-types/structured/</loc><lastmod>2026-10-06</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/data-types/time-series/</loc><lastmod>2026-10-04</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/data-types/probabilistic/</loc><lastmod>2026-10-11</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/data-types/queues-and-messaging/</loc><lastmod>2026-10-11</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/data-types/scalar/</loc><lastmod>2026-10-11</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/data-types/structured/</loc><lastmod>2026-10-11</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/data-types/time-series/</loc><lastmod>2026-10-11</lastmod></url>
   <url><loc>https://amaquet.newfoundcodes.com/data-types/types/adjacency_set/</loc><lastmod>2026-10-11</lastmod></url>
   <url><loc>https://amaquet.newfoundcodes.com/data-types/types/aggregated_series/</loc><lastmod>2026-10-11</lastmod></url>
   <url><loc>https://amaquet.newfoundcodes.com/data-types/types/array/</loc><lastmod>2026-10-11</lastmod></url>
@@ -113,35 +113,35 @@
   <url><loc>https://amaquet.newfoundcodes.com/data-types/types/uuid/</loc><lastmod>2026-10-11</lastmod></url>
   <url><loc>https://amaquet.newfoundcodes.com/data-types/types/vector_metadata/</loc><lastmod>2026-10-11</lastmod></url>
   <url><loc>https://amaquet.newfoundcodes.com/data-types/types/vector_set/</loc><lastmod>2026-10-11</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/data-types/vectors/</loc><lastmod>2026-10-04</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/development/adding-types/</loc><lastmod>2026-10-04</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/development/build/</loc><lastmod>2026-10-10</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/development/developer-fuzzing/</loc><lastmod>2026-10-10</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/development/repository-layout/</loc><lastmod>2026-10-10</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/data-types/vectors/</loc><lastmod>2026-10-11</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/development/adding-types/</loc><lastmod>2026-10-11</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/development/build/</loc><lastmod>2026-10-11</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/development/developer-fuzzing/</loc><lastmod>2026-10-11</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/development/repository-layout/</loc><lastmod>2026-10-11</lastmod></url>
   <url><loc>https://amaquet.newfoundcodes.com/development/testing-fuzzing/</loc><lastmod>2026-10-11</lastmod></url>
   <url><loc>https://amaquet.newfoundcodes.com/getting-started/configuration/</loc><lastmod>2026-10-11</lastmod></url>
   <url><loc>https://amaquet.newfoundcodes.com/getting-started/installation/</loc><lastmod>2026-10-11</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/getting-started/quickstart/</loc><lastmod>2026-10-11</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/operations/backups/</loc><lastmod>2026-10-10</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/operations/capacity/</loc><lastmod>2026-10-06</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/operations/deployment/</loc><lastmod>2026-10-10</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/operations/docker/</loc><lastmod>2026-10-06</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/operations/observability/</loc><lastmod>2026-10-10</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/operations/production-hardening/</loc><lastmod>2026-10-06</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/operations/tls/</loc><lastmod>2026-10-10</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/operations/troubleshooting/</loc><lastmod>2026-10-10</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/protocol/</loc><lastmod>2026-10-10</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/protocol/authentication/</loc><lastmod>2026-10-10</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/protocol/commands/</loc><lastmod>2026-10-06</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/protocol/framing/</loc><lastmod>2026-10-10</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/protocol/overview/</loc><lastmod>2026-10-06</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/protocol/uri/</loc><lastmod>2026-10-10</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/protocol/wire-values/</loc><lastmod>2026-10-10</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/getting-started/quickstart/</loc><lastmod>2026-10-23</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/operations/backups/</loc><lastmod>2026-10-11</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/operations/capacity/</loc><lastmod>2026-10-11</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/operations/deployment/</loc><lastmod>2026-10-11</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/operations/docker/</loc><lastmod>2026-10-23</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/operations/observability/</loc><lastmod>2026-10-11</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/operations/production-hardening/</loc><lastmod>2026-10-11</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/operations/tls/</loc><lastmod>2026-10-11</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/operations/troubleshooting/</loc><lastmod>2026-10-11</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/protocol/</loc><lastmod>2026-10-11</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/protocol/authentication/</loc><lastmod>2026-10-23</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/protocol/commands/</loc><lastmod>2026-10-23</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/protocol/framing/</loc><lastmod>2026-10-11</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/protocol/overview/</loc><lastmod>2026-10-23</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/protocol/uri/</loc><lastmod>2026-10-11</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/protocol/wire-values/</loc><lastmod>2026-10-11</lastmod></url>
   <url><loc>https://amaquet.newfoundcodes.com/reference/admin-api/</loc><lastmod>2026-10-11</lastmod></url>
   <url><loc>https://amaquet.newfoundcodes.com/reference/cli/</loc><lastmod>2026-10-11</lastmod></url>
   <url><loc>https://amaquet.newfoundcodes.com/reference/configuration/</loc><lastmod>2026-10-11</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/reference/errors/</loc><lastmod>2026-10-06</lastmod></url>
-  <url><loc>https://amaquet.newfoundcodes.com/reference/glossary/</loc><lastmod>2026-10-04</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/reference/errors/</loc><lastmod>2026-10-11</lastmod></url>
+  <url><loc>https://amaquet.newfoundcodes.com/reference/glossary/</loc><lastmod>2026-10-11</lastmod></url>
   <url><loc>https://amaquet.newfoundcodes.com/reference/go-client/</loc><lastmod>2026-10-11</lastmod></url>
   <url><loc>https://amaquet.newfoundcodes.com/reference/implementation-coverage/</loc><lastmod>2026-10-11</lastmod></url>
 </urlset>
