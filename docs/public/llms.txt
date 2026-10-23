@@ -34,7 +34,7 @@ Use these implementation-aligned pages for installation, protocol integration, d
 ## Protocol
 
 - [Amaquet authentication and identity](/protocol/authentication/): This page describes protocol negotiation, API-key authentication, permissions, and optional Ed25519 identity verification.
-- [Command reference](/protocol/commands/): These commands operate on the keyspace, server metadata, or execution envelope rather than on one type-specific implementation.
+- [Command reference](/protocol/commands/): Complete reference for Amaquet top-level commands, arguments, validation rules, result shapes, conditional writes, scans, batches, and chunked binary transfers.
 - [Binary framing](/protocol/framing/): Every Amaquet frame has a fixed 24-byte header followed by a bounded payload.
 - [Amaquet protocol overview](/protocol/overview/): Amaquet is Amaquet's binary framed protocol. It is not RESP and it does not proxy Redis.
 - [Connection URIs](/protocol/uri/): Use Amaquet connection URIs to select a protocol transport and identify the target server endpoint.
