@@ -40,6 +40,8 @@ trap 'rm -rf "$stage"' EXIT
 
 mkdir -p \
   "$stage/DEBIAN" \
+  "$stage/etc/amaquet" \
+  "$stage/lib/systemd/system" \
   "$stage/usr/bin" \
   "$stage/usr/share/amaquet" \
   "$stage/usr/share/doc/amaquet"
@@ -49,8 +51,13 @@ for binary in amaquet amaquet-cli amaquet-keygen amaquet-restore; do
 done
 
 install -m 0644 amaquet.example.json "$stage/usr/share/amaquet/amaquet.example.json"
+install -m 0640 packaging/deb/amaquet.service.json "$stage/etc/amaquet/amaquet.json"
+install -m 0644 packaging/deb/amaquet.service "$stage/lib/systemd/system/amaquetd.service"
 install -m 0644 README.md "$stage/usr/share/doc/amaquet/README.md"
 install -m 0644 LICENSE "$stage/usr/share/doc/amaquet/LICENSE"
+install -m 0644 packaging/deb/conffiles "$stage/DEBIAN/conffiles"
+install -m 0755 packaging/deb/postinst "$stage/DEBIAN/postinst"
+install -m 0755 packaging/deb/prerm "$stage/DEBIAN/prerm"
 
 cat > "$stage/DEBIAN/control" <<EOF
 Package: amaquet
@@ -58,6 +65,7 @@ Version: $version
 Section: database
 Priority: optional
 Architecture: $deb_arch
+Depends: adduser
 Maintainer: Newfoundcodes <jonathaneldy.baldivicio@newfoundcodes.com>
 Description: Amaquet typed in-memory database
  Amaquet is a standalone in-memory database with a custom binary protocol,
