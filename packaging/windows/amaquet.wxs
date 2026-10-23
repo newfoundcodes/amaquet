@@ -5,7 +5,6 @@
     Manufacturer="Newfoundcodes"
     Version="$(var.ProductVersion)"
     UpgradeCode="7B7F7DD4-7B27-4B1C-A9AC-9E8B320C0F11"
-    Platform="x64"
     Scope="perMachine">
 
     <!-- The standard MSI maintenance entry provides uninstall and repair. -->

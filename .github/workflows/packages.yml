@@ -121,6 +121,7 @@ jobs:
           New-Item -ItemType Directory -Force -Path dist | Out-Null
           $source = (Resolve-Path staging).Path
           wix build packaging/windows/amaquet.wxs `
+            -arch x64 `
             -d SourceDir="$source" `
             -d ProductVersion="$env:PACKAGE_VERSION" `
             -o "dist/amaquet-$env:PACKAGE_VERSION-windows-amd64.msi"
