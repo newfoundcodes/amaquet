@@ -1,0 +1,21 @@
+{
+  "protocol": {
+    "host": "127.0.0.1",
+    "port": 13378,
+    "require_auth": true
+  },
+  "admin": {
+    "host": "127.0.0.1",
+    "port": 13379,
+    "metrics_require_auth": true
+  },
+  "security": {
+    "bootstrap_token": ""
+  },
+  "persistence": {
+    "aof_enabled": true,
+    "aof_path": "C:\\ProgramData\\Amaquet\\data\\amaquet.aof",
+    "fsync": "everysec"
+  },
+  "data_dir": "C:\\ProgramData\\Amaquet\\data"
+}
