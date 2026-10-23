@@ -60,6 +60,14 @@ func randomToken() string {
 }
 
 func main() {
+	if runAsWindowsService(runServer) {
+		return
+	}
+
+	runServer(nil)
+}
+
+func runServer(serviceStop <-chan struct{}) {
 	configPath := flag.String("config", "./amaquet.json", "path to JSON configuration")
 	showVersion := flag.Bool("version", false, "print version")
 	initConfig := flag.Bool("init-config", false, "write a default configuration and exit")
@@ -227,6 +235,8 @@ func main() {
 	select {
 	case s := <-sig:
 		logger.Info("Shutdown requested", "signal", s.String())
+	case <-serviceStop:
+		logger.Info("Shutdown requested", "signal", "service-stop")
 	case e := <-errCh:
 		if e != nil && e != http.ErrServerClosed {
 			logger.Error("Server stopped unexpectedly", "error", e)
