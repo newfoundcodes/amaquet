@@ -99,6 +99,7 @@ jobs:
             go build -trimpath -ldflags '-s -w' -o "staging/$command.exe" "./cmd/$command"
           }
           Copy-Item amaquet.example.json staging/amaquet.example.json
+          Copy-Item packaging/windows/amaquet-service.json staging/amaquet-service.json
           Copy-Item README.md staging/README.md
           Copy-Item LICENSE staging/LICENSE
           magick assets/amaquet-logo.png `
@@ -113,6 +114,7 @@ jobs:
           $wixTools = "${env:USERPROFILE}\.dotnet\tools"
           $env:PATH = "$wixTools;$env:PATH"
           wix extension add -g WixToolset.UI.wixext/4.0.5
+          wix extension add -g WixToolset.Util.wixext/4.0.5
           $wixTools | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Build MSI
@@ -126,6 +128,7 @@ jobs:
           wix build packaging/windows/amaquet.wxs `
             -arch x64 `
             -ext WixToolset.UI.wixext/4.0.5 `
+            -ext WixToolset.Util.wixext/4.0.5 `
             -d SourceDir="$source" `
             -d ProductVersion="$env:PACKAGE_VERSION" `
             -o "dist/amaquet-$env:PACKAGE_VERSION-windows-amd64.msi"
