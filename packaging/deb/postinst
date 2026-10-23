@@ -1,0 +1,19 @@
+#!/bin/sh
+set -e
+
+if ! getent group amaquet >/dev/null 2>&1; then
+    addgroup --system amaquet
+fi
+
+if ! getent passwd amaquet >/dev/null 2>&1; then
+    adduser --system --ingroup amaquet --home /var/lib/amaquet --no-create-home --shell /usr/sbin/nologin amaquet
+fi
+
+install -d -o amaquet -g amaquet -m 0750 /var/lib/amaquet
+install -d -o root -g amaquet -m 0750 /etc/amaquet
+chown root:amaquet /etc/amaquet/amaquet.json
+chmod 0640 /etc/amaquet/amaquet.json
+
+if command -v systemctl >/dev/null 2>&1 && [ -d /run/systemd/system ]; then
+    systemctl daemon-reload || true
+fi
