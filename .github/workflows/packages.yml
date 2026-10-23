@@ -110,7 +110,10 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           dotnet tool install --global wix --version 4.0.5
-          "${env:USERPROFILE}\.dotnet\tools" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          $wixTools = "${env:USERPROFILE}\.dotnet\tools"
+          $env:PATH = "$wixTools;$env:PATH"
+          wix extension add -g WixToolset.UI.wixext/4.0.5
+          $wixTools | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Build MSI
         shell: pwsh
@@ -122,6 +125,7 @@ jobs:
           $source = (Resolve-Path staging).Path
           wix build packaging/windows/amaquet.wxs `
             -arch x64 `
+            -ext WixToolset.UI.wixext/4.0.5 `
             -d SourceDir="$source" `
             -d ProductVersion="$env:PACKAGE_VERSION" `
             -o "dist/amaquet-$env:PACKAGE_VERSION-windows-amd64.msi"
