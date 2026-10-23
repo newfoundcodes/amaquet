@@ -1,0 +1,29 @@
+[Unit]
+Description=Amaquet database server
+Documentation=https://amaquet.newfoundcodes.com/getting-started/installation/
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=amaquet
+Group=amaquet
+WorkingDirectory=/var/lib/amaquet
+ExecStart=/usr/bin/amaquet --config /etc/amaquet/amaquet.json
+Restart=on-failure
+RestartSec=5s
+TimeoutStopSec=30s
+KillSignal=SIGTERM
+UMask=0077
+LimitNOFILE=65536
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=full
+ReadWritePaths=/var/lib/amaquet
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=amaquetd
+
+[Install]
+WantedBy=multi-user.target
