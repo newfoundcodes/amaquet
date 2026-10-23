@@ -196,9 +196,13 @@ C:\Program Files\Amaquet\bin\amaquet-restore.exe
 C:\Program Files\Amaquet\amaquet.example.json
 C:\Program Files\Amaquet\README.md
 C:\Program Files\Amaquet\LICENSE
+C:\ProgramData\Amaquet\amaquet.json
+C:\ProgramData\Amaquet\data\
 ```
 
-The MSI does not create a Windows service, scheduled task, or Start Menu shortcut. It adds `C:\Program Files\Amaquet\bin` to the system `PATH`. Open a new PowerShell or Command Prompt window after installation so it receives the updated environment.
+The MSI registers an `Amaquet` Windows service configured for automatic startup. The service runs the selected installation's `bin\amaquet.exe` under the built-in `NT AUTHORITY\LocalService` account. Its loopback-only configuration and persistent data are stored under `C:\ProgramData\Amaquet`. The MSI does not create a scheduled task or Start Menu shortcut.
+
+It also adds `C:\Program Files\Amaquet\bin` to the system `PATH`. If you change the installation directory in the installer, the PATH entry uses the corresponding `bin` directory. Open a new PowerShell or Command Prompt window after installation so it receives the updated environment.
 
 ### Install through the Windows Installer UI
 
@@ -207,11 +211,12 @@ Use the graphical Windows Installer when you want the normal installation and ma
 1. Download `amaquet-VERSION-windows-amd64.msi` from the release **Assets** section.
 2. Open the `.msi` file.
 3. Approve the administrator prompt.
-4. Follow the installer steps.
-5. On the final page, confirm that installation completed successfully.
-6. Open a new PowerShell window before testing the PATH change.
+4. Choose the installation directory when prompted. Amaquet is installed below that directory, with executables in its `bin` subdirectory.
+5. Follow the installer steps. The `Amaquet` service is installed, configured for automatic startup, and started before setup completes.
+6. On the final page, confirm that installation completed successfully.
+7. Open a new PowerShell window before testing the PATH change.
 
-The MSI embeds the Amaquet logo as its Add/Remove Programs icon, installs per machine under `C:\Program Files\Amaquet`, and uses the standard Windows Installer completion page to report a successful installation.
+The MSI embeds the Amaquet logo as its Add/Remove Programs icon and uses the standard Windows Installer completion page to report a successful installation.
 
 ### Install silently
 
@@ -222,6 +227,48 @@ msiexec.exe /i .\amaquet-VERSION-windows-amd64.msi /qn /norestart /l*v .\amaquet
 ```
 
 The log records Windows Installer details for troubleshooting.
+
+### Manage the background service
+
+The installer starts the service immediately and configures it to start automatically with Windows. Use an elevated PowerShell window to inspect or control it:
+
+```powershell
+Get-Service -Name Amaquet
+Start-Service -Name Amaquet
+Stop-Service -Name Amaquet
+Restart-Service -Name Amaquet
+Set-Service -Name Amaquet -StartupType Automatic
+```
+
+The service uses:
+
+```text
+Executable: C:\Program Files\Amaquet\bin\amaquet.exe
+Configuration: C:\ProgramData\Amaquet\amaquet.json
+Data directory: C:\ProgramData\Amaquet\data
+Native protocol: 127.0.0.1:13378
+Admin API: 127.0.0.1:13379
+```
+
+The actual executable path reflects the installation directory selected during setup. Read the generated bootstrap token from the service data directory, then create a permanent API key through the authenticated admin API:
+
+```powershell
+Get-Content "$env:ProgramData\Amaquet\data\bootstrap-token"
+```
+
+Check that the service is responding:
+
+```powershell
+Invoke-RestMethod http://127.0.0.1:13379/api/health
+Invoke-RestMethod http://127.0.0.1:13379/api/ready
+```
+
+To run Amaquet manually in a console, stop the service first so two processes do not use the same data directory or AOF:
+
+```powershell
+Stop-Service -Name Amaquet
+& 'C:\Program Files\Amaquet\bin\amaquet.exe' --config "$env:ProgramData\Amaquet\amaquet.json"
+```
 
 ### Repair and verify
 
@@ -237,6 +284,7 @@ amaquet-cli.exe -h
 To start Amaquet, create a configuration using Windows paths:
 
 ```powershell
+Stop-Service -Name Amaquet
 & 'C:\Program Files\Amaquet\bin\amaquet.exe' --init-config --config "$env:USERPROFILE\amaquet\amaquet.json"
 & 'C:\Program Files\Amaquet\bin\amaquet.exe' --config "$env:USERPROFILE\amaquet\amaquet.json"
 ```
@@ -254,13 +302,13 @@ Use either supported Windows maintenance interface:
 
 Alternatively, open **Control Panel → Programs and Features**, select **Amaquet**, and choose **Uninstall** or **Repair**.
 
-With the original MSI available, you can uninstall silently:
+With the original MSI available, you can uninstall silently. Windows Installer stops and removes the `Amaquet` service as part of removal:
 
 ```powershell
 msiexec.exe /x .\amaquet-VERSION-windows-amd64.msi /qn /norestart /l*v .\amaquet-uninstall.log
 ```
 
-Uninstallation removes files under `C:\Program Files\Amaquet` and removes the Amaquet `bin` entry from the system `PATH`. It does not remove configuration, AOF data, or other files created under your user profile or another directory. Stop the server and back up data first.
+Uninstallation removes files under the selected installation directory and removes the Amaquet `bin` entry from the system `PATH`. It stops and removes the Windows service. It does not delete the service configuration, AOF data, bootstrap token, or other runtime files under `C:\ProgramData\Amaquet\data`; stop the service and back up that directory before uninstalling.
 
 ## macOS packages
 
@@ -528,5 +576,6 @@ Before replacing a binary or changing persistence settings, stop Amaquet cleanly
 | Authentication failure | Use the initialization token, current `data_dir/bootstrap-token`, or a permanent API key. |
 | macOS cannot verify the package | The current package is not notarized. Confirm its source, then use Finder **Open** or **Privacy & Security → Open Anyway**. |
 | Windows cannot find `amaquet` | Open a new terminal after installation so it receives the updated system PATH, then confirm that `C:\Program Files\Amaquet\bin` is present. |
+| Windows service will not start | Run `Get-Service Amaquet`, inspect the service configuration and `C:\ProgramData\Amaquet\data`, and review the Windows Event Viewer or run the binary manually with the service configuration. |
 
 Continue with [Quick start](quickstart.md), [Configuration](configuration.md), [Authentication and identity](../protocol/authentication.md), and [Production deployment](../operations/deployment.md).
