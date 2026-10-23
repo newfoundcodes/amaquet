@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+<Wix
+  xmlns="http://wixtoolset.org/schemas/v4/wxs"
+  xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
   <Package
     Name="Amaquet"
     Manufacturer="Newfoundcodes"
@@ -13,6 +15,7 @@
     <MediaTemplate EmbedCab="yes" />
     <Icon Id="AmaquetIcon" SourceFile="$(var.SourceDir)\amaquet.ico" />
     <Property Id="ARPPRODUCTICON" Value="AmaquetIcon" />
+    <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLFOLDER" />
 
     <Feature Id="MainFeature" Title="Amaquet" Level="1">
       <ComponentGroupRef Id="AmaquetFiles" />
@@ -21,12 +24,22 @@
 
   <Fragment>
     <StandardDirectory Id="ProgramFiles64Folder">
-      <Directory Id="INSTALLFOLDER" Name="Amaquet" />
+      <Directory Id="INSTALLFOLDER" Name="Amaquet">
+        <Directory Id="BIN_FOLDER" Name="bin" />
+      </Directory>
     </StandardDirectory>
 
-    <ComponentGroup Id="AmaquetFiles" Directory="INSTALLFOLDER">
+    <ComponentGroup Id="AmaquetFiles" Directory="BIN_FOLDER">
       <Component Id="AmaquetServer">
         <File Id="AmaquetServerExe" Source="$(var.SourceDir)\amaquet.exe" KeyPath="yes" />
+        <Environment
+          Id="AmaquetBinPath"
+          Name="PATH"
+          Action="set"
+          Part="last"
+          Permanent="no"
+          System="yes"
+          Value="[BIN_FOLDER]" />
       </Component>
       <Component Id="AmaquetCli">
         <File Id="AmaquetCliExe" Source="$(var.SourceDir)\amaquet-cli.exe" KeyPath="yes" />
@@ -37,13 +50,13 @@
       <Component Id="AmaquetRestore">
         <File Id="AmaquetRestoreExe" Source="$(var.SourceDir)\amaquet-restore.exe" KeyPath="yes" />
       </Component>
-      <Component Id="AmaquetExampleConfig">
+      <Component Id="AmaquetExampleConfig" Directory="INSTALLFOLDER">
         <File Id="AmaquetExampleConfigFile" Source="$(var.SourceDir)\amaquet.example.json" KeyPath="yes" />
       </Component>
-      <Component Id="AmaquetReadme">
+      <Component Id="AmaquetReadme" Directory="INSTALLFOLDER">
         <File Id="AmaquetReadmeFile" Source="$(var.SourceDir)\README.md" KeyPath="yes" />
       </Component>
-      <Component Id="AmaquetLicense">
+      <Component Id="AmaquetLicense" Directory="INSTALLFOLDER">
         <File Id="AmaquetLicenseFile" Source="$(var.SourceDir)\LICENSE" KeyPath="yes" />
       </Component>
     </ComponentGroup>
