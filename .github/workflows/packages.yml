@@ -15,7 +15,7 @@ env:
 jobs:
   version:
     name: Resolve package version
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
@@ -33,7 +33,7 @@ jobs:
   deb:
     name: Debian package (${{ matrix.arch }})
     needs: version
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -45,9 +45,9 @@ jobs:
           - arch: arm64
             goarch: arm64
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
 
@@ -70,7 +70,7 @@ jobs:
             "${{ matrix.arch }}" \
             "dist/amaquet_${{ needs.version.outputs.version }}_${{ matrix.arch }}.deb"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: amaquet-deb-${{ matrix.arch }}
           path: dist/*.deb
@@ -81,9 +81,9 @@ jobs:
     needs: version
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
 
@@ -126,7 +126,7 @@ jobs:
             -d ProductVersion="$env:PACKAGE_VERSION" `
             -o "dist/amaquet-$env:PACKAGE_VERSION-windows-amd64.msi"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: amaquet-msi-windows-amd64
           path: dist/*.msi
@@ -135,11 +135,11 @@ jobs:
   macos:
     name: macOS package installers
     needs: version
-    runs-on: macos-14
+    runs-on: macos-15-intel
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
 
@@ -166,7 +166,7 @@ jobs:
           packaging/macos/build-pkg.sh "$PACKAGE_VERSION" arm64 "dist/amaquet-$PACKAGE_VERSION-macos-apple-silicon.pkg"
           packaging/macos/build-pkg.sh "$PACKAGE_VERSION" universal "dist/amaquet-$PACKAGE_VERSION-macos-universal.pkg"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: amaquet-pkg-macos
           path: dist/*.pkg

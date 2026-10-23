@@ -17,7 +17,7 @@ Use these implementation-aligned pages for installation, protocol integration, d
 ## Getting started
 
 - [Configuration](/getting-started/configuration/): Configure Amaquet listeners, authentication, TLS, persistence, memory limits, request admission, and compression for local or production deployments.
-- [Installation](/getting-started/installation/): Install Amaquet from source, configure its server and CLI binaries, secure the first startup, and verify an authenticated request.
+- [Installation](/getting-started/installation/): Download and install Amaquet on Ubuntu, Debian, Windows, or macOS, or build it from source with a secure first-start configuration.
 - [Quick start](/getting-started/quickstart/): Run Amaquet locally, create a first key, connect with amaquet-cli, and move from an unauthenticated example to a secure deployment.
 
 ## Concepts
