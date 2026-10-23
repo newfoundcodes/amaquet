@@ -95,7 +95,10 @@
           Source="$(var.SourceDir)\amaquet-service.json"
           KeyPath="yes" />
       </Component>
-      <Component Id="AmaquetServiceData" Directory="AMAQUET_DATA_FOLDER">
+      <Component
+        Id="AmaquetServiceData"
+        Directory="AMAQUET_DATA_FOLDER"
+        Guid="8961E942-FBDD-456F-9C06-8DA127B8A9EA">
         <CreateFolder>
           <util:PermissionEx
             User="NT AUTHORITY\LOCAL SERVICE"
