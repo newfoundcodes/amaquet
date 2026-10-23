@@ -154,7 +154,7 @@ Use these implementation-aligned pages for installation, protocol integration, d
 
 - [Backup and recovery](/operations/backups/): This page explains which Amaquet state must be protected and how to create, validate, and restore recovery artifacts.
 - [Capacity planning](/operations/capacity/): Amaquet keeps the active database in memory. Plan capacity from the stored data, indexes, Go object overhead, protocol buffers, temporary work space,…
-- [Production deployment](/operations/deployment/): Use this guidance to deploy Amaquet as a secure, monitored single-node stateful service.
+- [Deployment](/operations/deployment/): Deploy Amaquet as a secure single-node stateful service on Linux, AWS, Google Cloud, VPS providers, Docker, Kubernetes, or behind Cloudflare Tunnel.
 - [Docker](/operations/docker/): The repository contains Dockerfile, a loopback-only development docker-compose.yml, and a TLS-oriented docker-compose.production.yml.
 - [Observability](/operations/observability/): This page describes the native and HTTP surfaces that expose Amaquet health, capacity, and runtime metrics.
 - [Production hardening](/operations/production-hardening/): Amaquet applies bounded-resource, fail-stop, and revocation rules for a single-node production deployment.
