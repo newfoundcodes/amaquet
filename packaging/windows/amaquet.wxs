@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix
   xmlns="http://wixtoolset.org/schemas/v4/wxs"
-  xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+  xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui"
+  xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
   <Package
     Name="Amaquet"
     Manufacturer="Newfoundcodes"
@@ -19,6 +20,7 @@
 
     <Feature Id="MainFeature" Title="Amaquet" Level="1">
       <ComponentGroupRef Id="AmaquetFiles" />
+      <ComponentGroupRef Id="AmaquetServiceFiles" />
     </Feature>
   </Package>
 
@@ -26,6 +28,12 @@
     <StandardDirectory Id="ProgramFiles64Folder">
       <Directory Id="INSTALLFOLDER" Name="Amaquet">
         <Directory Id="BIN_FOLDER" Name="bin" />
+      </Directory>
+    </StandardDirectory>
+
+    <StandardDirectory Id="CommonAppDataFolder">
+      <Directory Id="AMAQUET_COMMON_FOLDER" Name="Amaquet">
+        <Directory Id="AMAQUET_DATA_FOLDER" Name="data" />
       </Directory>
     </StandardDirectory>
 
@@ -40,6 +48,24 @@
           Permanent="no"
           System="yes"
           Value="[BIN_FOLDER]" />
+        <ServiceInstall
+          Id="AmaquetServiceInstall"
+          Name="Amaquet"
+          DisplayName="Amaquet"
+          Description="Amaquet in-memory database service"
+          Type="ownProcess"
+          Start="auto"
+          ErrorControl="normal"
+          Vital="yes"
+          Account="NT AUTHORITY\LocalService"
+          Arguments="--config &quot;[#AmaquetServiceConfigFile]&quot;" />
+        <ServiceControl
+          Id="AmaquetServiceControl"
+          Name="Amaquet"
+          Start="install"
+          Stop="both"
+          Remove="uninstall"
+          Wait="yes" />
       </Component>
       <Component Id="AmaquetCli">
         <File Id="AmaquetCliExe" Source="$(var.SourceDir)\amaquet-cli.exe" KeyPath="yes" />
@@ -58,6 +84,23 @@
       </Component>
       <Component Id="AmaquetLicense" Directory="INSTALLFOLDER">
         <File Id="AmaquetLicenseFile" Source="$(var.SourceDir)\LICENSE" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+
+    <ComponentGroup Id="AmaquetServiceFiles">
+      <Component Id="AmaquetServiceConfig" Directory="AMAQUET_COMMON_FOLDER">
+        <File
+          Id="AmaquetServiceConfigFile"
+          Name="amaquet.json"
+          Source="$(var.SourceDir)\amaquet-service.json"
+          KeyPath="yes" />
+      </Component>
+      <Component Id="AmaquetServiceData" Directory="AMAQUET_DATA_FOLDER">
+        <CreateFolder>
+          <util:PermissionEx
+            User="NT AUTHORITY\LOCAL SERVICE"
+            GenericAll="yes" />
+        </CreateFolder>
       </Component>
     </ComponentGroup>
   </Fragment>
