@@ -14003,107 +14003,120 @@ Source: [canonical documentation page](/getting-started/quickstart/)
 
 Summary: Run Amaquet locally, create a first key, connect with amaquet-cli, and move from an unauthenticated example to a secure deployment.
 
-This example uses authentication disabled only to keep the first local session short. Production deployments should enable authentication and TLS.
+This quick start keeps both listeners on loopback, but leaves native authentication enabled. It uses the same bootstrap flow as a production installation: generate a bootstrap credential, create a permanent API key, then use that key for application traffic.
 
-### 1. Local configuration
+### 1. Build and initialize
 
-Create `amaquet.json`:
+Build the binaries and generate a complete local configuration:
 
-```json
-{
-  "protocol": {
-    "host": "127.0.0.1",
-    "port": 13378,
-    "tls": false,
-    "require_auth": false
-  },
-  "admin": {
-    "host": "127.0.0.1",
-    "port": 13379
-  },
-  "security": {
-    "bootstrap_token": "replace-this"
-  },
-  "persistence": {
-    "aof_enabled": false,
-    "aof_path": "./data/amaquet.aof",
-    "fsync": "everysec"
-  },
-  "limits": {
-    "max_connections": 10000,
-    "max_payload_bytes": 67108864
-  },
-  "data_dir": "./data"
-}
+```bash
+make build
+./bin/amaquet --init-config --config ./amaquet.json
 ```
+
+`--init-config` writes a random bootstrap token into the configuration, prints it once, and exits. Store it in a protected shell environment for the rest of this guide; do not commit the configuration file.
+
+```bash
+export AMAQUET_BOOTSTRAP_TOKEN='paste-the-token-printed-by-init-config'
+```
+
+The generated local configuration keeps both listeners on `127.0.0.1`, requires native authentication, and leaves AOF disabled by default. Enable `persistence.aof_enabled` and keep the default `everysec` fsync mode when restart recovery matters.
 
 ### 2. Start Amaquet
 
 Start the server with the local configuration created in the previous step. The process remains in the foreground and owns both configured listeners.
 
 ```bash
-./bin/amaquet -config ./amaquet.json
+./bin/amaquet --config ./amaquet.json
 ```
 
-### 3. Ping
+### 3. Create a permanent API key
+
+The bootstrap token is intended for initialization, not routine application access. Use the admin API to create an `admin` API key. The secret is returned only in this response.
+
+```bash
+curl --fail --silent \
+  -H "Authorization: Bearer $AMAQUET_BOOTSTRAP_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"local-admin","role":"admin"}' \
+  http://127.0.0.1:13379/api/api-keys
+```
+
+Copy the `secret` field from the response and store it outside the repository:
+
+```bash
+export AMAQUET_API_KEY='paste-the-secret-from-the-response'
+```
+
+Creating the first admin API key permanently disables bootstrap authentication in the persisted administration state. If you lose every administrator credential, recovery requires restoring administration state from backup or performing an intentional state-recovery procedure.
+
+### 4. Ping
 
 From another terminal, use the CLI to verify that the native protocol listener accepts commands.
 
 ```bash
-./bin/amaquet-cli -uri amaquet://127.0.0.1:13378 PING '{}'
+./bin/amaquet-cli -uri amaquet://127.0.0.1:13378 \
+  -api-key "$AMAQUET_API_KEY" PING '{}'
 ```
 
-### 4. Store a typed scalar
+### 5. Store a typed scalar
 
 Store a directly encoded value with `SET`, then retrieve it with `GET` to confirm its type and payload.
 
 ```bash
-./bin/amaquet-cli -uri amaquet://127.0.0.1:13378 SET \
+./bin/amaquet-cli -uri amaquet://127.0.0.1:13378 \
+  -api-key "$AMAQUET_API_KEY" SET \
   '{"key":"user:1:name","type":"utf8_string","value":"Nathanne"}'
 ```
 
 Read it:
 
 ```bash
-./bin/amaquet-cli -uri amaquet://127.0.0.1:13378 GET \
+./bin/amaquet-cli -uri amaquet://127.0.0.1:13378 \
+  -api-key "$AMAQUET_API_KEY" GET \
   '{"key":"user:1:name"}'
 ```
 
-### 5. Create a collection
+### 6. Create a collection
 
 Composite values are initialized with `CREATE`; use `OP` to apply a type-specific mutation afterward.
 
 ```bash
-./bin/amaquet-cli -uri amaquet://127.0.0.1:13378 CREATE \
+./bin/amaquet-cli -uri amaquet://127.0.0.1:13378 \
+  -api-key "$AMAQUET_API_KEY" CREATE \
   '{"key":"queue:jobs","type":"fifo_queue","options":{}}'
 ```
 
 Add a typed value:
 
 ```bash
-./bin/amaquet-cli -uri amaquet://127.0.0.1:13378 OP \
+./bin/amaquet-cli -uri amaquet://127.0.0.1:13378 \
+  -api-key "$AMAQUET_API_KEY" OP \
   '{"key":"queue:jobs","operation":"ENQUEUE","args":{"value":{"type":"utf8_string","value":"build"}}}'
 ```
 
-### 6. Add TTL
+### 7. Add TTL
 
 Expiration is expressed in positive milliseconds. This command gives the scalar key a 60-second lifetime without changing its value.
 
 ```bash
-./bin/amaquet-cli -uri amaquet://127.0.0.1:13378 EXPIRE \
+./bin/amaquet-cli -uri amaquet://127.0.0.1:13378 \
+  -api-key "$AMAQUET_API_KEY" EXPIRE \
   '{"key":"user:1:name","ttl_ms":60000}'
 ```
 
-### 7. Inspect server metadata
+### 8. Inspect server metadata
 
 Use these read-only commands to inspect runtime information and the registered type catalog.
 
 ```bash
-./bin/amaquet-cli -uri amaquet://127.0.0.1:13378 INFO '{}'
-./bin/amaquet-cli -uri amaquet://127.0.0.1:13378 TYPES '{}'
+./bin/amaquet-cli -uri amaquet://127.0.0.1:13378 \
+  -api-key "$AMAQUET_API_KEY" INFO '{}'
+./bin/amaquet-cli -uri amaquet://127.0.0.1:13378 \
+  -api-key "$AMAQUET_API_KEY" TYPES '{}'
 ```
 
-Next, read [Amaquet commands](/protocol/commands/) and [data types](/data-types/).
+Next, read [Amaquet commands](/protocol/commands/), [data types](/data-types/), and [configuration](/getting-started/configuration/). For a disposable unauthenticated test process, set `protocol.require_auth` to `false` explicitly and keep both listeners on loopback.
 
 ---
 
@@ -14319,23 +14332,39 @@ docker compose build
 docker compose up -d
 ```
 
+The development Compose file requires `AMAQUET_BOOTSTRAP_TOKEN` before it can start:
+
+```bash
+export AMAQUET_BOOTSTRAP_TOKEN="$(openssl rand -base64 32)"
+docker compose up -d --build
+```
+
+The value is injected into the container as an environment override; it is not written back to the repository configuration. The development file intentionally enables plaintext authentication inside the container because the published host ports are restricted to `127.0.0.1`. Do not reuse that profile when publishing the service remotely.
+
 Persist `data_dir` with a volume if AOF or admin state must survive container replacement. Mount production TLS and identity keys read-only where possible.
 
 Do not store production bootstrap tokens directly in a public Compose file. Inject secrets through the deployment platform.
 
-After start, check:
+After start, check the unauthenticated health endpoint and then the authenticated native listener:
 
 ```bash
+curl http://127.0.0.1:13379/api/health
 ./bin/amaquet-cli -uri amaquet://127.0.0.1:13378 \
   -api-key "$AMAQUET_BOOTSTRAP_TOKEN" PING '{}'
-curl http://127.0.0.1:13379/api/health
 ```
 
 The Compose configuration requires `AMAQUET_BOOTSTRAP_TOKEN` and enables protocol authentication, so the protocol check supplies that credential explicitly.
 
 The image uses a Go build stage to produce four statically linked binaries, and the final Alpine image runs as the unprivileged `amaquet` user. Compose binds host ports only to `127.0.0.1`, persists `/app/data` in `amaquet-data`, enables AOF `everysec`, and uses explicit insecure-listener overrides only because Docker must bind `0.0.0.0` inside the isolated container network.
 
-The production Compose file is a template rather than a zero-configuration launch. It publishes both ports on the host's configured interfaces, enables TLS for both listeners, and expects the four certificate/key files under `./certs`. Its configuration also names Ed25519 identity files under `/app/data/keys`, so generate those files in the persistent volume or change the paths before first startup. Review host firewall rules and certificate names before exposing either published port.
+The production Compose file is a template rather than a zero-configuration launch. Before starting it, provision:
+
+- `./certs/amaquet-server.crt` and `./certs/amaquet-server.key`;
+- `./certs/amaquet-admin.crt` and `./certs/amaquet-admin.key`;
+- an `AMAQUET_BOOTSTRAP_TOKEN` environment value; and
+- the Ed25519 files referenced by `/app/data/keys/amaquet-public.pem` and `/app/data/keys/amaquet-private.pem`, unless those paths are removed from the production configuration.
+
+The production image does not generate certificates or identity keys. TLS certificates must match the names used by clients, and private files must be readable by the unprivileged `amaquet` container user. Review host firewall rules before exposing either published port.
 
 ---
 
@@ -14819,7 +14848,7 @@ Payload:
 { "api_key": "amaquet_..." }
 ```
 
-Despite the field name, the credential may be a bootstrap token, API key, or an active member token that does not have MFA enabled. Member tokens with MFA enabled must use the HTTP session endpoint because native Amaquet `AUTH` has no MFA-code field. On success, the connection stores the current role and actor ID. Later commands revalidate the actor and authorize it against the current RBAC table, so revocation, expiration, disabling, and role changes take effect without reconnecting.
+Despite the field name, the credential may be a bootstrap token, API key, or an active member token that does not have MFA enabled. Member tokens with MFA enabled must use the HTTP session endpoint because native Amaquet `AUTH` has no MFA-code field. API-key secrets are generated with 32 random bytes and only their SHA-256 hashes are persisted; the raw secret is returned once when the key is created. On success, the connection stores the current role and actor ID. Later commands revalidate the actor and authorize it against the current RBAC table, so revocation, expiration, disabling, and role changes take effect without reconnecting.
 
 When `protocol.require_auth` is false, a new connection is an anonymous `admin` actor and can issue commands without `AUTH`. This mode should be confined to trusted environments.
 
@@ -14827,7 +14856,7 @@ When `protocol.require_auth` is false, a new connection is an anonymous `admin` 
 
 `PING`, `GET`, `EXISTS`, `TYPE`, `TTL`, `KEYS`, `SCAN`, `INFO`, `TYPES`, `MEMORY`, `BLOB_READ`, and the fixed read-only `OP` set require `data.read`. All other commands/operations require `data.write`.
 
-`SUBSCRIBE` requires `data.read`. `UNSUBSCRIBE` closes an already established local subscription without a separate authorization check. Authentication failures are throttled per remote IP using `admin.auth_failures_per_minute`, which is shared with the administration server setting.
+`SUBSCRIBE` requires `data.read`. `UNSUBSCRIBE` closes an already established local subscription without a separate authorization check. Authentication failures are throttled per remote IP using `admin.auth_failures_per_minute`, which is shared with the administration server setting. The native protocol has no MFA challenge-response flow; MFA-protected members must authenticate through `/api/session` and use the HTTP session cookie for administrative requests.
 
 ### Client identity verification
 
@@ -14839,114 +14868,498 @@ With identity keys configured, verify the returned nonce signature before trusti
 
 Source: [canonical documentation page](/protocol/commands/)
 
-Summary: These commands operate on the keyspace, server metadata, or execution envelope rather than on one type-specific implementation.
+Summary: Complete reference for Amaquet top-level commands, arguments, validation rules, result shapes, conditional writes, scans, batches, and chunked binary transfers.
 
-Commands use opcode `COMMAND` and a JSON request:
-
-```json
-{ "command": "GET", "args": { "key": "example" } }
-```
-
-### Common commands
-
-These commands operate on the keyspace, server metadata, or execution envelope rather than on one type-specific implementation. Command names are case-insensitive; argument property names remain case-sensitive.
-
-| Command       | Important arguments                                                                  | Result                                                                   |
-| ------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------ |
-| `PING`        | none                                                                                 | `PONG`                                                                   |
-| `SET`         | `key`, `type`, `value`; optional `ttl_ms`, `nx:false`, `xx:false`                    | `true`                                                                   |
-| `CREATE`      | `key`, `type`; optional `options:{}`, `ttl_ms`, `nx:false`, `xx:false`               | `true`                                                                   |
-| `CAS`         | `key`, positive `expected_version`, `type`, `value`; optional `ttl_ms`               | `true` or `CONFLICT`                                                     |
-| `BATCH`       | `requests`; optional `continue_on_error:false`                                       | ordered `{ok,result}` / `{ok,error}` items                               |
-| `GET`         | `key`                                                                                | `{key,type,value,version}` plus `expires_at` when present                |
-| `DEL`         | `keys`                                                                               | deleted count                                                            |
-| `EXISTS`      | `key`                                                                                | boolean                                                                  |
-| `TYPE`        | `key`                                                                                | stable wire type                                                         |
-| `TTL`         | `key`                                                                                | remaining whole milliseconds or `-1` for no expiration                   |
-| `EXPIRE`      | `key`, positive `ttl_ms`                                                             | boolean                                                                  |
-| `PERSIST`     | `key`                                                                                | boolean                                                                  |
-| `KEYS`        | optional `prefix:""`, `limit:1000`                                                   | bounded list; use `SCAN` for large keyspaces                             |
-| `SCAN`        | optional opaque `cursor:""`, `prefix:""`, `count:100`                                | `{keys,cursor}` page                                                     |
-| `BLOB_BEGIN`  | `key`, `total_size`; optional `upload_id`, `ttl_ms`, `nx`, `xx`, `connection_scoped` | upload ID, size, upload TTL, scope flag                                  |
-| `BLOB_CHUNK`  | `upload_id`, `offset`, base64 `data`                                                 | received bytes                                                           |
-| `BLOB_COMMIT` | `upload_id`                                                                          | boolean                                                                  |
-| `BLOB_ABORT`  | `upload_id`                                                                          | boolean                                                                  |
-| `BLOB_READ`   | `key`; optional `offset:0`, `length:1048576`                                         | key/version/offset/total size and base64 range                           |
-| `TYPES`       | none                                                                                 | registered type names                                                    |
-| `INFO`        | none                                                                                 | server, compression, and memory information                              |
-| `MEMORY`      | `key`                                                                                | key/type/version/access count/approximate bytes and compression metadata |
-| `OP`          | `key`, `operation`, `args`                                                           | type-specific result                                                     |
-
-### Server command deadline
-
-Normal command execution is bounded by `limits.command_timeout_ms`. The default is 30 seconds. A protocol `CANCEL` frame can cancel a compatible in-flight request earlier.
-
-Blocking data-type operations therefore cannot hold a server request forever even if the caller requests a longer wait.
-
-### Optimistic `CAS`
-
-Read `version` with `GET`, then replace only that version:
+Amaquet commands are JSON requests carried in a `COMMAND` protocol frame. The command name is case-insensitive; JSON argument names are case-sensitive. A request has this shape:
 
 ```json
 {
-  "command": "CAS",
+  "command": "GET",
+  "args": { "key": "profile:42" }
+}
+```
+
+The response is a protocol envelope. Successful commands return `ok: true` and a command-specific `result`; failures return `ok: false` and an error object:
+
+```json
+{ "ok": true, "result": { "key": "profile:42", "type": "json", "value": {}, "version": 1 } }
+```
+
+```json
+{ "ok": false, "error": { "code": "NOT_FOUND", "message": "key not found" } }
+```
+
+Native protocol authorization classifies commands as `data.read` or `data.write`. `PING`, introspection, key reads, `BLOB_READ`, and read-only `OP` operations require `data.read`; writes require `data.write`. See [authentication and identity](/protocol/authentication/) and [errors](/reference/errors/).
+
+### Argument conventions
+
+These conventions apply across the top-level commands. Type-specific operation arguments can have their own defaults and units, so those are documented separately in the `OP` section and type reference.
+
+| Argument form | Meaning |
+| --- | --- |
+| `key` | A non-empty string in the single global keyspace. Logical database paths are not supported. |
+| `type` | One of the stable names returned by `TYPES`, such as `integer`, `json`, or `fifo_queue`. |
+| `value` | A direct value whose JSON representation matches that type, or a nested wire-value object when used inside a composite type. |
+| `ttl_ms` | A relative lifetime accepted as numeric milliseconds or a Go duration string such as `"2h"`. For `SET`, `CREATE`, `CAS`, and `BLOB_BEGIN`, only a positive parsed duration creates expiry; omitted, zero, negative, or unparsable values result in no expiry. `EXPIRE` is stricter and rejects non-positive values. |
+| `expires_at_unix_nano` | Advanced absolute expiry timestamp used by replayed journal requests. It takes precedence over `ttl_ms` when present. |
+| `nx` | Conditional write: succeed only when the key does not exist as a live key. Defaults to `false`. |
+| `xx` | Conditional write: succeed only when the key already exists as a live key. Defaults to `false`. |
+| `cursor` | Opaque `SCAN` continuation token. Treat it as an uninterpreted string. |
+| `count` / `limit` | Requested result size. Relevant commands cap values at 10,000 unless a command documents a smaller limit. |
+
+Direct values use the top-level `type` and `value` fields:
+
+```json
+{
+  "command": "SET",
   "args": {
-    "key": "account:1",
-    "expected_version": 4,
-    "type": "json",
-    "value": { "balance": 120 },
+    "key": "counter",
+    "type": "integer",
+    "value": 41,
     "ttl_ms": 60000
   }
 }
 ```
 
-A stale version returns a conflict. AOF replay stores the resolved absolute expiration, so restart does not extend a CAS TTL.
-
-`SET`, `CREATE`, and `CAS` are full replacements. A positive relative TTL is converted to an absolute `expires_at_unix_nano` before journaling. `nx` requires the key to be absent; `xx` requires it to exist. Direct wire types and composite construction options are defined in [Type construction and operations](/data-types/operations/).
-
-### `BATCH`
-
-A batch accepts up to 1024 normal Amaquet requests. It reduces round trips. It is **not** a rollback transaction. Earlier successful requests remain applied if a later request fails. With `continue_on_error:false`, the returned array ends at the first error; with `true`, later requests are attempted. Each nested mutation crosses the ordinary AOF transaction boundary independently.
-
-### Cursor `SCAN`
-
-`SCAN` uses an opaque cursor. Start with an empty cursor and continue until the returned cursor is empty. Do not parse or construct cursors in application code.
-
-The implementation scans shard pages instead of materializing and sorting the complete keyspace for every page. Ordering is lexical within each of 256 shards, not globally lexical and not a point-in-time snapshot. Inserts, deletes, and expirations during iteration can affect later pages. `count` and `KEYS limit` are capped at 10,000; non-positive values select their defaults.
-
-### Large binary values
-
-A protocol frame is limited to 64 MiB. Chunked upload permits a `binary_string` value up to 1 GiB while keeping each request bounded.
-
-Typical sequence:
-
-1. `BLOB_BEGIN`
-2. one or more non-empty, non-overlapping `BLOB_CHUNK` requests
-3. `BLOB_COMMIT`, or `BLOB_ABORT`
-
-`total_size` can be 0 through 1 GiB. If `upload_id` is omitted, the dispatcher generates a random 128-bit hexadecimal ID before persistence. Chunks are standard base64, must be non-empty, cannot overlap, and cannot extend beyond the declared size. An upload accepts at most 65,536 spans. Pending uploads have a global byte budget and inactivity TTL. A connection-scoped upload can only be modified by its exact owner connection; ordinary uploads are not owner-bound.
-
-At commit, the object is read from the spool file into bounded 1 MiB in-memory blocks. It is not copied into one contiguous 1 GiB Go slice.
-
-Use `BLOB_READ` for large values:
+Nested values use an explicit envelope:
 
 ```json
-{ "command": "BLOB_READ", "args": { "key": "archive", "offset": 0, "length": 1048576 } }
+{
+  "type": "json",
+  "value": { "job_id": "job-1", "attempt": 1 }
+}
 ```
 
-`length` is limited to 32 MiB per request and reads at end-of-object may be shorter. A normal `GET` returns large chunked-binary metadata for objects above 32 MiB instead of creating an oversized response.
+The complete direct-value encoding table and all type-specific `OP` arguments are documented in [wire values](/protocol/wire-values/) and [type construction and operations](/data-types/operations/).
 
-The Go client exposes `UploadBlob` and `BlobRead` helpers.
+### Command summary
 
-### `OP`
+Use this table to choose the command and identify its required fields before reading the detailed sections below.
 
-`OP` dispatches operations implemented by the stored logical type. See the [data-type catalog](/data-types/) for type-specific operations.
+| Command | Required arguments | Main optional arguments | Result |
+| --- | --- | --- | --- |
+| `PING` | none | none | `"PONG"` |
+| `SET` | `key`, `type`, `value` | `ttl_ms`, `nx`, `xx` | `true` |
+| `CREATE` | `key`, `type` | `options`, `ttl_ms`, `nx`, `xx` | `true` |
+| `CAS` | `key`, `expected_version`, `type`, `value` | `ttl_ms` | `true` |
+| `BATCH` | `requests` | `continue_on_error` | Ordered per-request result objects |
+| `GET` | `key` | none | Key, type, value, version, optional expiry |
+| `DEL` | `keys` | none | Number of deleted keys |
+| `EXISTS` | `key` | none | Boolean |
+| `TYPE` | `key` | none | Stable type name |
+| `TTL` | `key` | none | Remaining milliseconds or `-1` |
+| `EXPIRE` | `key`, `ttl_ms` | none | `true` |
+| `PERSIST` | `key` | none | `true` |
+| `KEYS` | none | `prefix`, `limit` | Bounded key array |
+| `SCAN` | none | `cursor`, `prefix`, `count` | `{keys,cursor}` |
+| `BLOB_BEGIN` | `key`, `upload_id`, `total_size` | `ttl_ms`, `nx`, `xx`, `connection_scoped` | Upload metadata |
+| `BLOB_CHUNK` | `upload_id`, `offset`, `data` | none | Received and total byte counts |
+| `BLOB_COMMIT` | `upload_id` | none | `true` |
+| `BLOB_READ` | `key` | `offset`, `length` | Base64 binary range |
+| `BLOB_ABORT` | `upload_id` | none | Boolean |
+| `TYPES` | none | none | Array of 91 type names |
+| `INFO` | none | none | Runtime metadata and statistics |
+| `MEMORY` | `key` | none | Approximate per-key memory metadata |
+| `OP` | `key`, `operation` | nested `args` | Operation-specific result |
 
-### Introspection results
+### Liveness and introspection
 
-`TYPES` returns all 91 stable type names. `INFO` returns `name`, `protocol_version`, live `keys`, `uptime_seconds`, registered `types`, aggregate `compression`, and engine `memory` statistics. `MEMORY` returns `compressed:false` for native storage; compressed payloads add codec, original/stored sizes, and saving information.
+These commands inspect connectivity, the registered type catalog, and runtime accounting without changing stored values.
 
-Top-level command names and operation names are normalized to uppercase. JSON argument property names are case-sensitive. Unknown commands, missing/invalid arguments, and unsupported type operations return an error rather than being ignored.
+#### `PING`
+
+`PING` takes no arguments and returns the string `PONG`. It is a lightweight command-path check, not a persistence or readiness check.
+
+```json
+{ "command": "PING", "args": {} }
+```
+
+For HTTP health and AOF readiness, use `/api/health` and `/api/ready` on the administration listener.
+
+#### `TYPES`
+
+`TYPES` takes no arguments and returns all registered stable type names. The current implementation returns 91 names. Use this to discover the type spelling accepted by `SET` and `CREATE`.
+
+```json
+{ "command": "TYPES", "args": {} }
+```
+
+#### `INFO`
+
+`INFO` takes no arguments and returns a runtime snapshot:
+
+```json
+{
+  "name": "Amaquet",
+  "protocol_version": 1,
+  "keys": 12,
+  "uptime_seconds": 184,
+  "types": 91,
+  "compression": { "compressed_keys": 2, "original_bytes": 4096, "stored_bytes": 1200 },
+  "memory": { "used_bytes": 8192, "max_bytes": 0, "policy": "noeviction", "evicted_keys": 0 }
+}
+```
+
+The memory and compression objects contain additional implementation-defined counters. `used_bytes` is an approximate engine accounting value, not process RSS.
+
+#### `MEMORY`
+
+`MEMORY` requires `key` and returns per-entry accounting and access metadata:
+
+```json
+{ "command": "MEMORY", "args": { "key": "counter" } }
+```
+
+The result includes `key`, `type`, `version`, `access_count`, `approx_bytes`, and `compressed`. Compressed values add codec and original/stored-size fields. The estimate excludes some Go runtime and process-level overhead.
+
+### Key lifecycle commands
+
+These commands create, read, replace, conditionally update, expire, and delete keys in the single global keyspace.
+
+#### `SET`
+
+`SET` replaces or creates a directly encoded value. Its required arguments are `key`, a registered `type`, and a JSON `value` matching that type. A positive `ttl_ms` applies expiry; numeric milliseconds and Go duration strings are accepted. `nx` and `xx` implement conditional creation/replacement. A successful replacement of a live key advances its version; creating a new key starts at version 1. A failed conditional write returns an error and does not replace the value.
+
+```json
+{
+  "command": "SET",
+  "args": {
+    "key": "counter",
+    "type": "integer",
+    "value": 41,
+    "nx": true,
+    "ttl_ms": 300000
+  }
+}
+```
+
+Use `SET` for scalar and directly representable values. Use `CREATE` for composite values that need constructor options, then use `OP`.
+
+#### `CREATE`
+
+`CREATE` constructs a value through the registered type factory. It requires `key` and `type`; `options` is an optional object whose fields are type-specific. It also accepts `ttl_ms`, `nx`, and `xx`.
+
+```json
+{
+  "command": "CREATE",
+  "args": {
+    "key": "jobs",
+    "type": "fifo_queue",
+    "options": {},
+    "nx": true
+  }
+}
+```
+
+An example with constructor options:
+
+```json
+{
+  "command": "CREATE",
+  "args": {
+    "key": "events",
+    "type": "ring_buffer",
+    "options": { "capacity": 1024 }
+  }
+}
+```
+
+The accepted option names and defaults are type-specific; consult the corresponding type page before constructing specialized values.
+
+#### `GET`
+
+`GET` requires `key` and returns the logical value snapshot:
+
+```json
+{
+  "key": "counter",
+  "type": "integer",
+  "value": 42,
+  "version": 2,
+  "expires_at": "2026-10-23T12:00:00Z"
+}
+```
+
+`expires_at` is omitted when the key has no expiry. Mutable values are returned as public snapshots rather than internal pointers. Large chunked binary values above 32 MiB return metadata instead of a large inline value; use `BLOB_READ` for ranges.
+
+#### `CAS`
+
+`CAS` is an optimistic replacement. It requires the current positive `expected_version`, plus the same `key`, `type`, and `value` fields used by `SET`. It optionally accepts `ttl_ms`.
+
+```json
+{
+  "command": "CAS",
+  "args": {
+    "key": "counter",
+    "expected_version": 2,
+    "type": "integer",
+    "value": 43,
+    "ttl_ms": 60000
+  }
+}
+```
+
+The command returns `true` only when the stored version still matches. A stale version returns `CONFLICT`. The version is read with `GET`; successful TTL changes and successful mutations also advance it.
+
+#### `DEL`
+
+`DEL` requires `keys`, an array of key strings, and returns the number of live keys removed. Missing keys do not cause an error.
+
+```json
+{
+  "command": "DEL",
+  "args": { "keys": ["temporary", "old-session", "missing"] }
+}
+```
+
+#### `EXISTS` and `TYPE`
+
+Both commands require `key`. `EXISTS` returns a boolean. `TYPE` returns the stable type name and fails with `NOT_FOUND` when the key is absent.
+
+```json
+{ "command": "EXISTS", "args": { "key": "counter" } }
+```
+
+```json
+{ "command": "TYPE", "args": { "key": "counter" } }
+```
+
+#### `TTL`
+
+`TTL` requires `key` and returns remaining whole milliseconds. It returns `-1` for a live key without an expiry and returns `NOT_FOUND` for a missing or already-expired key.
+
+```json
+{ "command": "TTL", "args": { "key": "counter" } }
+```
+
+#### `EXPIRE` and `PERSIST`
+
+`EXPIRE` requires `key` and a positive `ttl_ms` (numeric milliseconds or a Go duration string); it rejects zero or negative durations, replaces the current expiry, and increments the key version. `PERSIST` requires `key`, removes an existing expiry, and also increments the version. Both fail with `NOT_FOUND` for a missing or expired key.
+
+```json
+{ "command": "EXPIRE", "args": { "key": "counter", "ttl_ms": 60000 } }
+```
+
+```json
+{ "command": "PERSIST", "args": { "key": "counter" } }
+```
+
+Expiry is enforced both lazily during access and by a background expiry worker. A TTL does not survive a restart unless the mutation is journaled through AOF.
+
+### Key enumeration
+
+Enumeration is bounded and best-effort: neither command provides a point-in-time snapshot of the keyspace.
+
+#### `KEYS`
+
+`KEYS` accepts optional `prefix` and `limit` arguments. `limit` defaults to 1000, non-positive values use the default, and values above 10,000 are capped. It returns a bounded array of matching live keys.
+
+```json
+{
+  "command": "KEYS",
+  "args": { "prefix": "user:", "limit": 50 }
+}
+```
+
+Use `KEYS` for bounded administrative inspection. It is not a point-in-time snapshot and its result is not globally lexical.
+
+#### `SCAN`
+
+`SCAN` is the incremental alternative for larger keyspaces. Its arguments are optional: `cursor` is empty for the first page, `prefix` filters keys, and `count` defaults to 100 and is capped at 10,000.
+
+```json
+{
+  "command": "SCAN",
+  "args": { "cursor": "", "prefix": "session:", "count": 100 }
+}
+```
+
+The result is `{ "keys": [...], "cursor": "..." }`. Continue until `cursor` is empty. Cursors are opaque and do not represent a snapshot: inserts, deletes, and expirations during iteration can affect later pages. Keys are ordered within shard-local pages; no global ordering is promised.
+
+### Batches and conditional execution
+
+Use these commands to reduce round trips or protect a replacement against a stale version; neither provides a general multi-command rollback transaction.
+
+#### `BATCH`
+
+`BATCH` requires `requests`, an array of ordinary Amaquet request objects. It accepts at most 1,024 nested requests. `continue_on_error` defaults to `false`.
+
+```json
+{
+  "command": "BATCH",
+  "args": {
+    "continue_on_error": true,
+    "requests": [
+      { "command": "SET", "args": { "key": "a", "type": "integer", "value": 1 } },
+      { "command": "INEXISTENT", "args": {} },
+      { "command": "GET", "args": { "key": "a" } }
+    ]
+  }
+}
+```
+
+The result is an ordered array of `{ok,result}` or `{ok,error}` objects. With `continue_on_error:false`, execution stops after the first failed nested request. With `true`, later requests are attempted. `BATCH` is not atomic and does not roll back earlier successful requests; each nested mutation has its own ordinary persistence boundary.
+
+### Chunked binary commands
+
+Protocol frames are limited to 64 MiB. Chunked uploads support a logical binary value up to 1 GiB while spooling incoming chunks to temporary files. Chunks use standard padded base64. A complete upload is committed as the `binary_string` type.
+
+#### `BLOB_BEGIN`
+
+`BLOB_BEGIN` requires `key`, a non-empty `upload_id`, and `total_size` from 0 through 1 GiB. Optional arguments are `ttl_ms`, `nx`, `xx`, and `connection_scoped`.
+
+```json
+{
+  "command": "BLOB_BEGIN",
+  "args": {
+    "key": "archive",
+    "upload_id": "archive-2026-01",
+    "total_size": 10485760,
+    "ttl_ms": 86400000,
+    "nx": true,
+    "connection_scoped": true
+  }
+}
+```
+
+`ttl_ms` controls the expiry of the final stored value; unfinished uploads also receive the configured inactivity TTL. `connection_scoped:true` binds later chunk, commit, and abort requests to the exact native connection that created the upload. The result contains `upload_id`, `total_size`, `expires_in_ms`, and `connection_scoped`. Pending uploads consume the global `max_pending_upload_bytes` budget.
+
+#### `BLOB_CHUNK`
+
+`BLOB_CHUNK` requires `upload_id`, a non-negative byte `offset`, and non-empty base64 `data`. The decoded range must remain within `total_size`, cannot overlap an earlier chunk, and each upload is limited to 65,536 spans.
+
+```json
+{
+  "command": "BLOB_CHUNK",
+  "args": {
+    "upload_id": "archive-2026-01",
+    "offset": 0,
+    "data": "AAECAwQ="
+  }
+}
+```
+
+The result reports `{ "received": N, "total_size": M }`. `received` counts unique decoded bytes, not the highest offset.
+
+#### `BLOB_COMMIT`
+
+`BLOB_COMMIT` requires `upload_id`. It succeeds only when every byte from offset 0 through `total_size-1` has been received. It returns `true`, creates or replaces the destination `binary_string`, applies the upload's `nx`/`xx` and final TTL settings, and removes the temporary spool file.
+
+```json
+{ "command": "BLOB_COMMIT", "args": { "upload_id": "archive-2026-01" } }
+```
+
+Commit reads the spool in bounded blocks and reserves engine capacity before installing the value. A pre-installation failure leaves the upload available for retry until its inactivity deadline. Once the value has been installed, a later AOF commit failure can return an error while the in-memory mutation remains applied; that persistence failure is handled by the server's degraded fail-stop path and the upload is no longer retryable.
+
+#### `BLOB_READ`
+
+`BLOB_READ` requires `key`, which must contain a `binary_string`. Optional `offset` defaults to 0 and `length` defaults to 1 MiB. Both must be non-negative; `length` cannot exceed 32 MiB per request. Reads at the end of the object may return fewer bytes.
+
+```json
+{
+  "command": "BLOB_READ",
+  "args": { "key": "archive", "offset": 1048576, "length": 262144 }
+}
+```
+
+The result is:
+
+```json
+{
+  "key": "archive",
+  "version": 3,
+  "offset": 1048576,
+  "size": 10485760,
+  "data": "...base64..."
+}
+```
+
+#### `BLOB_ABORT`
+
+`BLOB_ABORT` requires `upload_id`, removes the unfinished upload, and returns `true` when it existed or `false` when it was already absent. It cannot abort an upload while it is committing.
+
+```json
+{ "command": "BLOB_ABORT", "args": { "upload_id": "archive-2026-01" } }
+```
+
+### `OP`: type-specific operations
+
+`OP` requires a stored `key` and an `operation` string. Its optional nested `args` object contains operation-specific arguments:
+
+```json
+{
+  "command": "OP",
+  "args": {
+    "key": "jobs",
+    "operation": "ENQUEUE",
+    "args": {
+      "value": { "type": "json", "value": { "id": "job-1" } }
+    }
+  }
+}
+```
+
+Operation names are case-insensitive, but nested argument names are case-sensitive. The operation must be supported by the stored type. Read operations return a type-specific result and do not increment the key version; successful mutations increment it. Blocking operations such as blocking-queue dequeue, semaphore acquire, and barrier waits observe the request context and the server `command_timeout_ms` deadline.
+
+Common operation argument patterns include:
+
+| Pattern | Examples |
+| --- | --- |
+| Nested typed value | `value: {"type":"utf8_string","value":"build"}` for lists, queues, sets, maps, and records |
+| Numeric delta | `delta` for integer, unsigned-integer, float, and atomic-counter `ADD` |
+| Range | `start`, `stop`, `from`, `to`, or `count`, depending on the collection or log |
+| Time | Unix milliseconds for samples/availability; Unix nanoseconds are used by replay-oriented timestamp fields |
+| Vector search | `vector` plus optional `k` and type-specific metric/configuration |
+| Lease/lock ownership | `owner`, `token`, and optional positive `ttl_ms`; ownership is token-based, not inferred from authentication |
+
+Examples:
+
+```json
+{
+  "command": "OP",
+  "args": { "key": "counter", "operation": "ADD", "args": { "delta": 1 } }
+}
+```
+
+```json
+{
+  "command": "OP",
+  "args": {
+    "key": "scores",
+    "operation": "ADD",
+    "args": {
+      "member": { "type": "utf8_string", "value": "alice" },
+      "score": 97.5
+    }
+  }
+}
+```
+
+```json
+{
+  "command": "OP",
+  "args": {
+    "key": "timeline",
+    "operation": "ADD",
+    "args": {
+      "fields": {
+        "kind": { "type": "utf8_string", "value": "login" },
+        "user_id": { "type": "integer", "value": 42 }
+      }
+    }
+  }
+}
+```
+
+The [type construction and operation reference](/data-types/operations/) is the authoritative operation-by-operation argument and result catalog. It includes all 91 registered types, constructor options, read/write behavior, defaults, and constraints.
+
+### Execution, cancellation, and persistence
+
+Normal command execution is bounded by `limits.command_timeout_ms`, which defaults to 30 seconds. A client can send a `CANCEL` frame for an active request, but cancellation is cooperative: the operation must observe the context. Request IDs are independent, so multiplexed commands can complete out of order.
+
+When AOF is enabled, mutating top-level commands and journalable mutating `OP` operations are written through prepare/commit records. Read operations are not journaled. Ephemeral coordination mutations—such as Pub/Sub, leases, locks, barriers, semaphores, and rate-limit buckets—are intentionally not persisted because restoring ownership state could recreate stale coordination. See [persistence](/concepts/persistence/) for replay and durability behavior.
+
+`BATCH` does not create a multi-command transaction. A successful command that later encounters an AOF commit failure may already have changed memory while the server enters persistence-degraded fail-stop behavior; clients should reconcile state rather than assuming a non-OK mutation was necessarily absent.
 
 ---
 
@@ -15029,7 +15442,7 @@ The default port is `13378`.
 
 ### Request flow
 
-Connections negotiate the single supported protocol version before normal command traffic. Authentication follows negotiation when enabled, after which request IDs let command responses complete independently.
+Connections negotiate the single supported protocol version before normal command traffic. `HELLO` is deliberately available before authentication so a client can inspect the server protocol and optional identity. Authentication follows negotiation when enabled, after which request IDs let command responses complete independently.
 
 1. Open TCP/TLS connection.
 2. Send `HELLO` to negotiate protocol version and inspect server metadata/identity (the Go client does this automatically).
@@ -15041,13 +15454,13 @@ Connections negotiate the single supported protocol version before normal comman
 
 Frame payloads are JSON. Framing is binary; command values are typed JSON structures.
 
-Protocol version 1 capabilities advertised by `HELLO` are `cancel`, `batch`, `cas`, `scan`, `chunked_blob`, and `pubsub`. The protocol supports multiplexed command responses but makes no cross-command transaction guarantee.
+Protocol version 1 capabilities advertised by `HELLO` are `cancel`, `batch`, `cas`, `scan`, `chunked_blob`, and `pubsub`. These are capability labels, not separate negotiated feature versions. The protocol supports multiplexed command responses but makes no cross-command transaction guarantee: `BATCH` reduces round trips and returns per-item results, but it does not roll back earlier successful requests.
 
 ### Hard limits
 
 The protocol implementation has a 64 MiB hard payload ceiling. The server can configure a smaller per-connection maximum with `limits.max_payload_bytes`.
 
-The configured read timeout applies while waiting for the next frame/header/payload; successful reads refresh it. The write timeout applies to responses and Pub/Sub event frames. `limits.command_timeout_ms` creates a context deadline for each command and synchronous non-command opcode handler.
+The configured read timeout applies while waiting for the next frame/header/payload; successful reads refresh it. The write timeout applies to responses and Pub/Sub event frames. `limits.command_timeout_ms` creates a context deadline for each command and synchronous non-command opcode handler. A client context timeout is independent: cancelling it causes the Go client to send a best-effort `CANCEL`, but cancellation is cooperative and a command must observe its context.
 
 ---
 
