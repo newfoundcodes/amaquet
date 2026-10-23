@@ -1,0 +1,172 @@
+name: Build Packages
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  GO_VERSION: '1.23.x'
+
+jobs:
+  version:
+    name: Resolve package version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          candidate="${GITHUB_REF_NAME#v}"
+          if [[ "$candidate" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "version=$candidate" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=0.1.0" >> "$GITHUB_OUTPUT"
+          fi
+
+  deb:
+    name: Debian package (${{ matrix.arch }})
+    needs: version
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd
+            goarch: '386'
+          - arch: amd64
+            goarch: amd64
+          - arch: arm64
+            goarch: arm64
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Build Linux binaries
+        env:
+          GOARCH: ${{ matrix.goarch }}
+        run: |
+          set -euo pipefail
+          mkdir -p "bin/$GOARCH"
+          for command in amaquet amaquet-cli amaquet-keygen amaquet-restore; do
+            CGO_ENABLED=0 GOOS=linux GOARCH="$GOARCH" \
+              go build -trimpath -ldflags='-s -w' -o "bin/$GOARCH/$command" "./cmd/$command"
+          done
+
+      - name: Build Debian package
+        run: |
+          chmod +x packaging/deb/build-deb.sh
+          packaging/deb/build-deb.sh \
+            "${{ needs.version.outputs.version }}" \
+            "${{ matrix.arch }}" \
+            "dist/amaquet_${{ needs.version.outputs.version }}_${{ matrix.arch }}.deb"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: amaquet-deb-${{ matrix.arch }}
+          path: dist/*.deb
+          if-no-files-found: error
+
+  windows:
+    name: Windows MSI
+    needs: version
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Build Windows binaries
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          New-Item -ItemType Directory -Force -Path staging | Out-Null
+          $env:CGO_ENABLED = '0'
+          $env:GOOS = 'windows'
+          $env:GOARCH = 'amd64'
+          foreach ($command in @('amaquet', 'amaquet-cli', 'amaquet-keygen', 'amaquet-restore')) {
+            go build -trimpath -ldflags '-s -w' -o "staging/$command.exe" "./cmd/$command"
+          }
+          Copy-Item amaquet.example.json staging/amaquet.example.json
+          Copy-Item README.md staging/README.md
+          Copy-Item LICENSE staging/LICENSE
+          magick assets/amaquet-logo.png `
+            -define icon:auto-resize=256,128,64,48,32,16 `
+            staging/amaquet.ico
+
+      - name: Install WiX Toolset
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          dotnet tool install --global wix --version 4.0.5
+          "${env:USERPROFILE}\.dotnet\tools" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Build MSI
+        shell: pwsh
+        env:
+          PACKAGE_VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          $source = (Resolve-Path staging).Path
+          wix build packaging/windows/amaquet.wxs `
+            -d SourceDir="$source" `
+            -d ProductVersion="$env:PACKAGE_VERSION" `
+            -o "dist/amaquet-$env:PACKAGE_VERSION-windows-amd64.msi"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: amaquet-msi-windows-amd64
+          path: dist/*.msi
+          if-no-files-found: error
+
+  macos:
+    name: macOS package installers
+    needs: version
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Build Intel and Apple Silicon binaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          for arch in amd64 arm64; do
+            mkdir -p "bin/$arch"
+            for command in amaquet amaquet-cli amaquet-keygen amaquet-restore; do
+              CGO_ENABLED=0 GOOS=darwin GOARCH="$arch" \
+                go build -trimpath -ldflags='-s -w' -o "bin/$arch/$command" "./cmd/$command"
+            done
+          done
+
+      - name: Build macOS installers
+        shell: bash
+        env:
+          PACKAGE_VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          chmod +x packaging/macos/build-pkg.sh
+          packaging/macos/build-pkg.sh "$PACKAGE_VERSION" amd64 "dist/amaquet-$PACKAGE_VERSION-macos-intel.pkg"
+          packaging/macos/build-pkg.sh "$PACKAGE_VERSION" arm64 "dist/amaquet-$PACKAGE_VERSION-macos-apple-silicon.pkg"
+          packaging/macos/build-pkg.sh "$PACKAGE_VERSION" universal "dist/amaquet-$PACKAGE_VERSION-macos-universal.pkg"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: amaquet-pkg-macos
+          path: dist/*.pkg
+          if-no-files-found: error
