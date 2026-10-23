@@ -3,7 +3,7 @@ title: "Installation"
 description: "Download and install Amaquet on Ubuntu, Debian, Windows, or macOS, or build it from source with a secure first-start configuration."
 ---
 
-This guide covers the supported release packages and source installation. Amaquet is a standalone Go database server; its packages do not install Redis, another database, or a background service. You choose how and when the server is started.
+This guide covers the supported release packages and source installation. Amaquet is a standalone Go database server; its packages do not install Redis or another database. The Debian package includes an optional systemd unit, but it does not start or enable it automatically.
 
 ## Choose an installation method
 
@@ -41,7 +41,7 @@ The current packaging workflow does not publish checksum files. Use the official
 
 ## Ubuntu and Debian
 
-The Debian packages install four executables under `/usr/bin` and read-only examples under `/usr/share`. They do not create a systemd unit, configuration under `/etc`, data directory, or running server.
+The Debian packages install four executables under `/usr/bin`, a systemd unit named `amaquetd`, a service configuration under `/etc/amaquet`, and a persistent service data directory at `/var/lib/amaquet`. Installation does not start or enable the service automatically.
 
 ### Select the package
 
@@ -109,7 +109,7 @@ amaquet -version
 amaquet-cli -h
 ```
 
-The package owns these files:
+The package owns these files and directories:
 
 ```text
 /usr/bin/amaquet
@@ -119,9 +119,45 @@ The package owns these files:
 /usr/share/amaquet/amaquet.example.json
 /usr/share/doc/amaquet/README.md
 /usr/share/doc/amaquet/LICENSE
+/etc/amaquet/amaquet.json
+/lib/systemd/system/amaquetd.service
+/var/lib/amaquet/
 ```
 
-The package does not add a service manager entry. For a local installation, generate a configuration and start the server explicitly:
+The packaged service runs as the unprivileged `amaquet` system user, binds both listeners to loopback, enables AOF at `/var/lib/amaquet/amaquet.aof`, and creates its bootstrap token at `/var/lib/amaquet/bootstrap-token` on first start. Read the token with `sudo cat /var/lib/amaquet/bootstrap-token`, then create a permanent API key through the authenticated admin API.
+
+### Manage the Debian service
+
+The package installs the unit but does not start it automatically. Use these commands:
+
+```bash
+sudo systemctl status amaquetd
+sudo systemctl start amaquetd
+sudo systemctl stop amaquetd
+sudo systemctl enable amaquetd
+sudo systemctl disable amaquetd
+```
+
+To enable the service and start it immediately:
+
+```bash
+sudo systemctl enable --now amaquetd
+```
+
+Check startup and runtime logs with:
+
+```bash
+sudo journalctl -u amaquetd --no-pager
+sudo journalctl -u amaquetd -f
+```
+
+After changing `/etc/amaquet/amaquet.json`, restart the service because Amaquet loads configuration at process startup:
+
+```bash
+sudo systemctl restart amaquetd
+```
+
+The packaged configuration is intentionally loopback-only and does not configure TLS. Keep the listeners local unless you replace the configuration with a reviewed TLS-enabled deployment profile. For a local, foreground installation instead, use:
 
 ```bash
 mkdir -p "$HOME/amaquet"
@@ -133,9 +169,10 @@ Initialization prints a bootstrap token once and uses a local `data` directory b
 
 ### Uninstall
 
-Stop Amaquet first, then remove the package:
+Stop and disable the service before removing the package:
 
 ```bash
+sudo systemctl disable --now amaquetd
 sudo apt remove amaquet
 ```
 
@@ -145,7 +182,7 @@ Or:
 sudo dpkg -r amaquet
 ```
 
-Removal deletes package-owned files only. It does not delete files created outside the package, such as `/etc/amaquet/amaquet.json`, `/var/lib/amaquet`, `./data`, or an AOF file. Back up and remove those separately only when you are certain they are no longer needed.
+Removal deletes package-owned executables and the unit. Debian normally retains `/etc/amaquet/amaquet.json` as a conffile, and the package deliberately preserves the `amaquet` system user and `/var/lib/amaquet` data so that an uninstall does not destroy AOF or administration state. It also does not delete other files created outside the package, such as `./data` or custom TLS material. Back up and remove preserved files separately only when you are certain they are no longer needed.
 
 ## Windows MSI
 
@@ -349,7 +386,7 @@ All installation methods provide the same four executables:
 | `amaquet-keygen` | Generates an optional Ed25519 server identity key pair. |
 | `amaquet-restore` | Validates and atomically installs a verified AOF checkpoint while the server is stopped. |
 
-The server keeps active values in memory. AOF persistence and control-plane files under `data_dir` are optional, but durable deployments should put them on persistent, protected storage. Package installation does not configure persistence automatically.
+The server keeps active values in memory. AOF persistence and control-plane files under `data_dir` are optional, but durable deployments should put them on persistent, protected storage. The Debian service package configures AOF under `/var/lib/amaquet`; source, Windows, and macOS installations do not configure persistence automatically.
 
 ## Build from source
 
