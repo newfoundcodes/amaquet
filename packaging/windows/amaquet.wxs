@@ -9,6 +9,8 @@
 
     <!-- The standard MSI maintenance entry provides uninstall and repair. -->
     <MajorUpgrade DowngradeErrorMessage="A newer version of Amaquet is already installed." />
+    <!-- Keep the MSI self-contained so repair does not require a separate cab1.cab file. -->
+    <MediaTemplate EmbedCab="yes" />
     <Icon Id="AmaquetIcon" SourceFile="$(var.SourceDir)\amaquet.ico" />
     <Property Id="ARPPRODUCTICON" Value="AmaquetIcon" />
 
